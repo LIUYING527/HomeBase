@@ -31,6 +31,9 @@
       /* Closet accent */
       --cl-rose: #E8B4B8;
       --cl-rose-dark: #C0737A;
+      /* Budget accent */
+      --bd-green: #10b981;
+      --bd-green-dark: #047857;
       /* Chores accent */
       --hw-teal: #2dd4bf;
       --hw-teal-dark: #0f766e;
@@ -120,7 +123,8 @@
     .main-nav-item[data-sec="homebase"].active { color: var(--primary); }
     .main-nav-item[data-sec="closet"].active { color: var(--cl-rose-dark); }
     .main-nav-item[data-sec="diary"].active   { color: var(--dy-pink-dark); }
-    .main-nav-item[data-sec="chores"].active { color: var(--hw-teal-dark); }
+    .main-nav-item[data-sec="chores"].active  { color: var(--hw-teal-dark); }
+    .main-nav-item[data-sec="budget"].active { color: var(--bd-green-dark); }
 
     /* ─── FABs ─── */
     .fab {
@@ -154,6 +158,11 @@
       bottom: calc(var(--nav-h) + 20px); right: 24px;
       width: 56px; height: 56px;
       background: var(--hw-teal-dark); box-shadow: 0 4px 20px rgba(15,118,110,.35);
+    }
+    #fab-bd-add {
+      bottom: calc(var(--nav-h) + 20px); right: 24px;
+      width: 56px; height: 56px;
+      background: var(--bd-green-dark); box-shadow: 0 4px 20px rgba(4,120,87,.35);
     }
 
     /* ═══════════════════════════════
@@ -664,6 +673,117 @@
     .toast.show { opacity: 1; }
 
     /* ═══════════════════════════════
+       BUDGET SECTION
+    ═══════════════════════════════ */
+    #section-budget {
+      display: none; min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 80px);
+    }
+    .bd-header {
+      padding: 48px 18px 0; background: var(--bg); position: sticky; top: 0; z-index: 100;
+    }
+    .bd-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .bd-title { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+    .bd-month-nav { display: flex; align-items: center; gap: 8px; }
+    .bd-month-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      line-height: 1; font-family: inherit; color: var(--text);
+    }
+    .bd-month-btn:disabled { opacity: .3; cursor: default; }
+    .bd-month-label { font-size: 14px; font-weight: 600; min-width: 76px; text-align: center; }
+    .bd-sub-tab {
+      flex: 1; padding: 8px 0; border-radius: 10px; font-size: 14px; font-weight: 600;
+      text-align: center; cursor: pointer; border: none; background: transparent;
+      color: var(--text-3); transition: all .2s; font-family: inherit;
+    }
+    .bd-sub-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .bd-page { display: none; flex-direction: column; }
+    .bd-page.active { display: flex; }
+
+    /* Balance card */
+    .bd-balance-card {
+      margin: 16px 18px 0; border-radius: var(--r); padding: 20px;
+      background: linear-gradient(135deg, #065f46, #047857); color: white;
+    }
+    .bd-bal-row1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .bd-bal-label { font-size: 12px; opacity: .8; margin-bottom: 4px; }
+    .bd-bal-amount { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+    .bd-bal-right { text-align: right; }
+    .bd-bal-small { font-size: 13px; opacity: .85; margin-bottom: 3px; }
+    .bd-progress-track { height: 6px; background: rgba(255,255,255,.25); border-radius: 3px; overflow: hidden; }
+    .bd-progress-fill { height: 100%; border-radius: 3px; transition: width .4s, background .4s; }
+
+    /* Category bars */
+    .bd-cats { padding: 16px 18px 8px; }
+    .bd-section-label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 12px; }
+    .bd-cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .bd-cat-ico  { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+    .bd-cat-name { font-size: 13px; font-weight: 500; width: 38px; flex-shrink: 0; }
+    .bd-cat-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .bd-cat-fill  { height: 100%; border-radius: 4px; }
+    .bd-cat-amt  { font-size: 13px; font-weight: 700; width: 58px; text-align: right; flex-shrink: 0; }
+
+    /* Entry list */
+    .bd-entries { padding: 4px 18px 16px; }
+    .bd-entry-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .bd-entry-item:last-child { border-bottom: none; }
+    .bd-entry-ico {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .bd-entry-info { flex: 1; min-width: 0; }
+    .bd-entry-cat  { font-size: 13px; font-weight: 600; }
+    .bd-entry-note { font-size: 12px; color: var(--text-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bd-entry-right { text-align: right; flex-shrink: 0; }
+    .bd-entry-amt  { font-size: 15px; font-weight: 700; color: #dc2626; }
+    .bd-entry-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+    .bd-entry-del  { font-size: 11px; color: var(--text-3); cursor: pointer; margin-top: 3px; }
+
+    /* Fund page */
+    .bd-fund-card {
+      margin: 16px 18px 0; border-radius: var(--r); padding: 24px;
+      background: linear-gradient(135deg, #1e3a5f, #1e40af); color: white; text-align: center;
+    }
+    .bd-fund-label  { font-size: 13px; opacity: .8; margin-bottom: 8px; }
+    .bd-fund-amount { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; }
+    .bd-fund-hint   { font-size: 12px; opacity: .7; }
+    .bd-fund-history { padding: 16px 18px; }
+    .bd-fund-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .bd-fund-row:last-child { border-bottom: none; }
+    .bd-fund-row-label { font-size: 14px; font-weight: 500; }
+    .bd-fund-row-amt   { font-size: 14px; font-weight: 700; }
+    .bd-fund-row-amt.pos { color: #15803d; }
+    .bd-fund-row-amt.neg { color: #dc2626; }
+
+    /* Add entry modal */
+    .bd-cat-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .bd-cat-btn {
+      padding: 8px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
+      transition: all .2s; white-space: nowrap;
+    }
+    .bd-cat-btn.on { background: #f0fdf4; border-color: #22c55e; color: #15803d; font-weight: 700; }
+    .bd-who-row { display: flex; gap: 8px; }
+    .bd-who-btn {
+      flex: 1; padding: 10px; border-radius: 10px; text-align: center;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .bd-who-btn.on { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; font-weight: 700; }
+    .bd-amount-wrap { position: relative; }
+    .bd-amount-prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 700; color: var(--text-3); pointer-events: none; }
+
+    /* ═══════════════════════════════
        CHORES SECTION
     ═══════════════════════════════ */
     #section-chores {
@@ -937,6 +1057,59 @@
   </div>
 </div>
 
+<!-- ═══ BUDGET SECTION ═══ -->
+<div id="section-budget">
+  <div class="bd-header">
+    <div class="bd-title-row">
+      <div class="bd-title">账本</div>
+      <div class="bd-month-nav">
+        <button class="bd-month-btn" onclick="bdPrevMonth()">‹</button>
+        <span class="bd-month-label" id="bd-month-label">--</span>
+        <button class="bd-month-btn" id="bd-month-next" onclick="bdNextMonth()">›</button>
+      </div>
+    </div>
+    <div class="cl-sub-tabs">
+      <button class="bd-sub-tab active" data-pg="ledger" onclick="bdSwitchPage('ledger')">流水</button>
+      <button class="bd-sub-tab" data-pg="fund" onclick="bdSwitchPage('fund')">旅游基金</button>
+    </div>
+  </div>
+
+  <!-- Ledger page -->
+  <div class="bd-page active" id="bd-pg-ledger">
+    <div class="bd-balance-card" id="bd-balance-card">
+      <div class="bd-bal-row1">
+        <div>
+          <div class="bd-bal-label">本月剩余</div>
+          <div class="bd-bal-amount" id="bd-remaining">--</div>
+        </div>
+        <div class="bd-bal-right">
+          <div class="bd-bal-small">预算 <span id="bd-budget-label">¥2000</span></div>
+          <div class="bd-bal-small">已花 <span id="bd-spent-label">¥0</span></div>
+        </div>
+      </div>
+      <div class="bd-progress-track">
+        <div class="bd-progress-fill" id="bd-progress" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="bd-cats" id="bd-cats"></div>
+    <div class="bd-entries" id="bd-entries"></div>
+    <div class="cl-empty" id="bd-empty" style="display:none">
+      <div class="cl-empty-ico">💰</div>
+      <div class="cl-empty-txt">本月还没有支出记录<br>点右下角 + 记一笔</div>
+    </div>
+  </div>
+
+  <!-- Fund page -->
+  <div class="bd-page" id="bd-pg-fund">
+    <div class="bd-fund-card">
+      <div class="bd-fund-label">旅游基金</div>
+      <div class="bd-fund-amount" id="bd-fund-amount">¥0</div>
+      <div class="bd-fund-hint">每月结余自动累计</div>
+    </div>
+    <div class="bd-fund-history" id="bd-fund-history"></div>
+  </div>
+</div>
+
 <!-- ═══ CHORES SECTION ═══ -->
 <div id="section-chores">
   <div class="hw-header">
@@ -993,6 +1166,9 @@
   <div class="main-nav-item" data-sec="chores" onclick="switchSection('chores')">
     <span class="nav-ico">🧹</span><span>家务</span>
   </div>
+  <div class="main-nav-item" data-sec="budget" onclick="switchSection('budget')">
+    <span class="nav-ico">💰</span><span>账本</span>
+  </div>
 </nav>
 
 <!-- FABs -->
@@ -1001,6 +1177,7 @@
 <button class="fab" id="fab-cl-add" onclick="clOpenAddModal()">＋</button>
 <button class="fab" id="fab-dy-add" onclick="dyOpenAddModal()">＋</button>
 <button class="fab" id="fab-hw-add" onclick="hwOpenAddModal()">＋</button>
+<button class="fab" id="fab-bd-add" onclick="bdOpenAddModal()">＋</button>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1158,6 +1335,61 @@
   </div>
 </div>
 
+<!-- ─── Budget: Add Entry Modal ─── -->
+<div class="modal-overlay" id="bd-add-modal" onclick="if(event.target===this)bdCloseAddModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">记一笔</div>
+    <div class="field-group">
+      <label class="field-label">金额 *</label>
+      <div class="bd-amount-wrap">
+        <span class="bd-amount-prefix">¥</span>
+        <input class="field-input" type="number" id="bd-inp-amount"
+               style="padding-left:30px;font-size:22px;font-weight:700" placeholder="0" inputmode="decimal">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">分类 *</label>
+      <div class="bd-cat-picker">
+        <button class="bd-cat-btn" data-cat="房租"  onclick="bdPickCat('房租')">🏠 房租</button>
+        <button class="bd-cat-btn" data-cat="生活"  onclick="bdPickCat('生活')">🛒 生活</button>
+        <button class="bd-cat-btn" data-cat="娱乐"  onclick="bdPickCat('娱乐')">🎉 娱乐</button>
+        <button class="bd-cat-btn" data-cat="旅游"  onclick="bdPickCat('旅游')">✈️ 旅游</button>
+        <button class="bd-cat-btn" data-cat="其他"  onclick="bdPickCat('其他')">📦 其他</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">谁花的</label>
+      <div class="bd-who-row">
+        <button class="bd-who-btn on" data-bwho="我" onclick="bdPickWho('我')">👤 我</button>
+        <button class="bd-who-btn" data-bwho="TA" onclick="bdPickWho('TA')">👤 TA</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">备注</label>
+      <input class="field-input" type="text" id="bd-inp-note" placeholder="买了什么…（可不填）">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="bdCloseAddModal()">取消</button>
+      <button class="btn-primary" style="flex:1;background:var(--bd-green-dark)" onclick="bdSaveEntry()">记账</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Chores: Who Did It Modal ─── -->
+<div class="modal-overlay" id="hw-who-modal" onclick="if(event.target===this)hwCloseWhoModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="hw-who-title">谁做的？</div>
+    <div style="display:flex;gap:12px">
+      <button class="btn-primary" style="flex:1;padding:18px;font-size:17px;background:#db2777"
+              onclick="hwConfirmWho('我')">👤 我做的</button>
+      <button class="btn-primary" style="flex:1;padding:18px;font-size:17px;background:#3b82f6"
+              onclick="hwConfirmWho('TA')">👤 TA做的</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Chores: Add Task Modal ─── -->
 <div class="modal-overlay" id="hw-add-modal" onclick="if(event.target===this)hwCloseAddModal()">
   <div class="modal-sheet">
@@ -1192,6 +1424,14 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">今天想说</div>
+    <div class="field-group">
+      <label class="field-label">谁说的</label>
+      <div class="dy-who-row">
+        <button class="dy-who-btn on" data-vwho="我" onclick="dyPickVoiceWho('我')"
+                style="border-color:var(--dy-pink);background:var(--dy-pink-light);color:var(--dy-pink-dark)">👤 我</button>
+        <button class="dy-who-btn" data-vwho="TA" onclick="dyPickVoiceWho('TA')">👤 TA</button>
+      </div>
+    </div>
     <div class="field-group">
       <label class="field-label">心情</label>
       <div class="dy-mood-picker" id="dy-mood-picker">
@@ -1283,6 +1523,7 @@ function switchSection(name) {
   document.getElementById('section-closet').style.display = name === 'closet' ? 'flex' : 'none';
   document.getElementById('section-diary').style.display  = name === 'diary'   ? 'flex'  : 'none';
   document.getElementById('section-chores').style.display = name === 'chores' ? 'block' : 'none';
+  document.getElementById('section-budget').style.display = name === 'budget' ? 'block' : 'none';
 
   document.querySelectorAll('.main-nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.sec === name);
@@ -1295,6 +1536,7 @@ function switchSection(name) {
   document.getElementById('fab-cl-add').classList.toggle('visible', name === 'closet' && clPage === 'wardrobe');
   document.getElementById('fab-dy-add').classList.toggle('visible', name === 'diary');
   document.getElementById('fab-hw-add').classList.toggle('visible', name === 'chores');
+  document.getElementById('fab-bd-add').classList.toggle('visible', name === 'budget' && bdState.page === 'ledger');
 
   if (name === 'diary') {
     const pg = dyState.currentPage;
@@ -1391,6 +1633,12 @@ async function startApp() {
   dyRenderVoices();
   dyRenderFights();
   document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+
+  // Init Budget
+  bdState.currentMonth = bdCurrentYM();
+  bdUpdateMonthNav();
+  await bdLoadEntries();
+  bdRenderLedger();
 
   // Init Chores
   hwState.tasks = await clDbAll('hw_tasks');
@@ -2090,6 +2338,7 @@ const dyState = {
   fights: [],
   currentPage: 'voice',
   selectedMood: '🥰',
+  selectedVoiceWho: '我',
   selectedWho: '互相的',
   madeUp: true,
 };
@@ -2109,22 +2358,36 @@ function dyRenderVoices() {
   const empty = document.getElementById('dy-voice-empty');
   if (!dyState.voices.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
-  list.innerHTML = dyState.voices.map(v => `
-    <div class="dy-voice-card">
+  list.innerHTML = dyState.voices.map(v => {
+    const isMe = !v.who || v.who === '我';
+    const borderColor = isMe ? 'var(--dy-pink)' : '#3b82f6';
+    const whoColor    = isMe ? 'var(--dy-pink-dark)' : '#1d4ed8';
+    const whoBg       = isMe ? 'var(--dy-pink-light)' : '#eff6ff';
+    return `
+    <div class="dy-voice-card" style="border-left-color:${borderColor}">
       <div class="dy-voice-top">
         <span class="dy-voice-mood">${v.mood}</span>
+        ${v.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoBg};color:${whoColor};font-weight:700">${v.who}</span>` : ''}
         <span class="dy-voice-date">${v.date}</span>
       </div>
       <div class="dy-voice-content">${esc(v.content)}</div>
       <div class="dy-card-del" onclick="dyDeleteVoice('${v.id}')">删除</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function dyOpenVoiceModal() {
   dyState.selectedMood = '🥰';
+  dyState.selectedVoiceWho = '我';
   document.getElementById('dy-voice-inp').value = '';
   document.querySelectorAll('.dy-mood-btn').forEach(b => b.classList.toggle('on', b.dataset.mood === '🥰'));
+  document.querySelectorAll('[data-vwho]').forEach(b => {
+    const isMe = b.dataset.vwho === '我';
+    b.classList.toggle('on', isMe);
+    b.style.borderColor = isMe ? 'var(--dy-pink)' : '';
+    b.style.background  = isMe ? 'var(--dy-pink-light)' : '';
+    b.style.color       = isMe ? 'var(--dy-pink-dark)' : '';
+  });
   document.getElementById('dy-voice-modal').classList.add('show');
   setTimeout(() => document.getElementById('dy-voice-inp').focus(), 220);
 }
@@ -2135,12 +2398,29 @@ function dyPickMood(m) {
   document.querySelectorAll('.dy-mood-btn').forEach(b => b.classList.toggle('on', b.dataset.mood === m));
 }
 
+function dyPickVoiceWho(w) {
+  dyState.selectedVoiceWho = w;
+  const isMe = w === '我';
+  document.querySelectorAll('[data-vwho]').forEach(b => {
+    const mine = b.dataset.vwho === w;
+    b.classList.toggle('on', mine);
+    if (mine) {
+      b.style.borderColor = isMe ? 'var(--dy-pink)' : '#3b82f6';
+      b.style.background  = isMe ? 'var(--dy-pink-light)' : '#eff6ff';
+      b.style.color       = isMe ? 'var(--dy-pink-dark)' : '#1d4ed8';
+    } else {
+      b.style.borderColor = ''; b.style.background = ''; b.style.color = '';
+    }
+  });
+}
+
 async function dySaveVoice() {
   const content = document.getElementById('dy-voice-inp').value.trim();
   if (!content) { document.getElementById('dy-voice-inp').focus(); return; }
   const entry = {
     id: `v${Date.now()}`,
     mood: dyState.selectedMood,
+    who: dyState.selectedVoiceWho,
     content,
     date: new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }),
     createdAt: Date.now()
@@ -2254,6 +2534,223 @@ function dyOpenAddModal() {
 
 // ════════════════════════════════════════
 // ════════════════════════════════════════
+// BUDGET
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+const BD_CATS = [
+  { key:'房租', emoji:'🏠', color:'#3b82f6', bg:'#eff6ff' },
+  { key:'生活', emoji:'🛒', color:'#22c55e', bg:'#f0fdf4' },
+  { key:'娱乐', emoji:'🎉', color:'#f59e0b', bg:'#fffbeb' },
+  { key:'旅游', emoji:'✈️', color:'#8b5cf6', bg:'#f5f3ff' },
+  { key:'其他', emoji:'📦', color:'#6b7280', bg:'#f9fafb' },
+];
+
+const bdState = { entries: [], currentMonth: '', page: 'ledger', selCat: null, selWho: '我' };
+
+function bdGetBudget() { return parseInt(localStorage.getItem('hb_monthly_budget') || '2000'); }
+
+function bdCurrentYM() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function bdMonthLabel(ym) {
+  const [y, m] = ym.split('-');
+  return `${y}年${parseInt(m)}月`;
+}
+
+function bdUpdateMonthNav() {
+  document.getElementById('bd-month-label').textContent = bdMonthLabel(bdState.currentMonth);
+  document.getElementById('bd-month-next').disabled = bdState.currentMonth >= bdCurrentYM();
+}
+
+function bdSwitchPage(pg) {
+  bdState.page = pg;
+  document.querySelectorAll('.bd-sub-tab').forEach(b => b.classList.toggle('active', b.dataset.pg === pg));
+  document.querySelectorAll('.bd-page').forEach(p => p.classList.toggle('active', p.id === `bd-pg-${pg}`));
+  document.getElementById('fab-bd-add').classList.toggle('visible', pg === 'ledger' && currentSection === 'budget');
+  if (pg === 'fund') bdRenderFund();
+}
+
+function bdPrevMonth() {
+  const [y, m] = bdState.currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 2, 1);
+  bdState.currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  bdUpdateMonthNav();
+  bdRenderLedger();
+}
+
+function bdNextMonth() {
+  if (bdState.currentMonth >= bdCurrentYM()) return;
+  const [y, m] = bdState.currentMonth.split('-').map(Number);
+  const d = new Date(y, m, 1);
+  bdState.currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  bdUpdateMonthNav();
+  bdRenderLedger();
+}
+
+async function bdLoadEntries() {
+  try {
+    const { data, error } = await sb.from('hb_budget_entries')
+      .select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    bdState.entries = data || [];
+  } catch { bdState.entries = []; }
+}
+
+function bdMonthEntries(ym) {
+  return bdState.entries.filter(e => e.created_at.startsWith(ym));
+}
+
+function bdRenderLedger() {
+  const budget  = bdGetBudget();
+  const entries = bdMonthEntries(bdState.currentMonth).sort((a,b) => b.created_at.localeCompare(a.created_at));
+  const total   = entries.reduce((s, e) => s + parseFloat(e.amount), 0);
+  const remain  = budget - total;
+  const pct     = budget > 0 ? Math.min(100, Math.round(total / budget * 100)) : 0;
+
+  document.getElementById('bd-remaining').textContent   = `¥${remain.toFixed(0)}`;
+  document.getElementById('bd-budget-label').textContent = `¥${budget}`;
+  document.getElementById('bd-spent-label').textContent  = `¥${total.toFixed(0)}`;
+
+  const fill = document.getElementById('bd-progress');
+  fill.style.width      = pct + '%';
+  fill.style.background = pct < 60 ? '#34d399' : pct < 85 ? '#fbbf24' : '#f87171';
+
+  const card = document.getElementById('bd-balance-card');
+  card.style.background = remain >= 0
+    ? 'linear-gradient(135deg, #065f46, #047857)'
+    : 'linear-gradient(135deg, #7f1d1d, #dc2626)';
+
+  // Category breakdown
+  const catTotals = {};
+  BD_CATS.forEach(c => { catTotals[c.key] = 0; });
+  entries.forEach(e => {
+    if (catTotals[e.category] !== undefined) catTotals[e.category] += parseFloat(e.amount);
+    else catTotals['其他'] += parseFloat(e.amount);
+  });
+  const maxCat = Math.max(...Object.values(catTotals), 1);
+  const nonZero = BD_CATS.filter(c => catTotals[c.key] > 0);
+  const catsEl  = document.getElementById('bd-cats');
+  catsEl.innerHTML = nonZero.length
+    ? `<div class="bd-section-label">分类</div>` + nonZero.map(c => `
+        <div class="bd-cat-row">
+          <span class="bd-cat-ico">${c.emoji}</span>
+          <span class="bd-cat-name">${c.key}</span>
+          <div class="bd-cat-track"><div class="bd-cat-fill" style="width:${Math.round(catTotals[c.key]/maxCat*100)}%;background:${c.color}"></div></div>
+          <span class="bd-cat-amt">¥${catTotals[c.key].toFixed(0)}</span>
+        </div>`).join('')
+    : '';
+
+  // Entries list
+  const entriesEl = document.getElementById('bd-entries');
+  const emptyEl   = document.getElementById('bd-empty');
+  if (!entries.length) { entriesEl.innerHTML = ''; emptyEl.style.display = 'flex'; return; }
+  emptyEl.style.display = 'none';
+  const catOf = k => BD_CATS.find(c => c.key === k) || BD_CATS[4];
+  entriesEl.innerHTML = `<div class="bd-section-label" style="padding-top:4px">明细</div>` + entries.map(e => {
+    const c  = catOf(e.category);
+    const d  = new Date(e.created_at);
+    const ts = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const whoColor = e.who === 'TA' ? '#3b82f6' : '#db2777';
+    return `<div class="bd-entry-item">
+      <div class="bd-entry-ico" style="background:${c.bg}">${c.emoji}</div>
+      <div class="bd-entry-info">
+        <div class="bd-entry-cat">${e.category}</div>
+        ${e.note ? `<div class="bd-entry-note">${esc(e.note)}</div>` : ''}
+      </div>
+      <div class="bd-entry-right">
+        <div class="bd-entry-amt">-¥${parseFloat(e.amount).toFixed(0)}</div>
+        <div class="bd-entry-meta">
+          <span style="color:${whoColor};font-weight:600">${e.who||'我'}</span> · ${ts}
+        </div>
+        <div class="bd-entry-del" onclick="bdDeleteEntry('${e.id}')">删除</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function bdRenderFund() {
+  const budget     = bdGetBudget();
+  const currentYM  = bdCurrentYM();
+  const monthMap   = {};
+  bdState.entries.forEach(e => {
+    const ym = e.created_at.substring(0, 7);
+    if (ym >= currentYM) return;
+    monthMap[ym] = (monthMap[ym] || 0) + parseFloat(e.amount);
+  });
+  const months = Object.keys(monthMap).sort().reverse();
+  let total = 0;
+  const rows = months.map(ym => {
+    const surplus = budget - monthMap[ym];
+    const contrib = Math.max(0, surplus);
+    total += contrib;
+    return { ym, surplus, contrib };
+  });
+  document.getElementById('bd-fund-amount').textContent = `¥${total.toFixed(0)}`;
+  const hist = document.getElementById('bd-fund-history');
+  hist.innerHTML = rows.length
+    ? `<div class="bd-section-label">月度明细</div>` + rows.map(r => `
+        <div class="bd-fund-row">
+          <span class="bd-fund-row-label">${bdMonthLabel(r.ym)}</span>
+          <span class="bd-fund-row-amt ${r.contrib>0?'pos':'neg'}">
+            ${r.contrib>0?'+':''}¥${r.contrib.toFixed(0)}${r.surplus<0?' (超支)':''}
+          </span>
+        </div>`).join('')
+    : '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:14px">完成第一个完整月后自动累计</div>';
+}
+
+function bdOpenAddModal() {
+  bdState.selCat = null; bdState.selWho = '我';
+  document.getElementById('bd-inp-amount').value = '';
+  document.getElementById('bd-inp-note').value   = '';
+  document.querySelectorAll('.bd-cat-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('[data-bwho]').forEach(b => b.classList.toggle('on', b.dataset.bwho === '我'));
+  document.getElementById('bd-add-modal').classList.add('show');
+  setTimeout(() => document.getElementById('bd-inp-amount').focus(), 220);
+}
+function bdCloseAddModal() { document.getElementById('bd-add-modal').classList.remove('show'); }
+
+function bdPickCat(cat) {
+  bdState.selCat = cat;
+  document.querySelectorAll('.bd-cat-btn').forEach(b => b.classList.toggle('on', b.dataset.cat === cat));
+}
+function bdPickWho(who) {
+  bdState.selWho = who;
+  document.querySelectorAll('[data-bwho]').forEach(b => b.classList.toggle('on', b.dataset.bwho === who));
+}
+
+async function bdSaveEntry() {
+  const amt = parseFloat(document.getElementById('bd-inp-amount').value);
+  if (!amt || amt <= 0) { document.getElementById('bd-inp-amount').focus(); return; }
+  if (!bdState.selCat) { toast('请选择分类'); return; }
+  try {
+    const { data, error } = await sb.from('hb_budget_entries').insert([{
+      amount: amt, category: bdState.selCat,
+      note: document.getElementById('bd-inp-note').value.trim() || null,
+      who: bdState.selWho
+    }]).select().single();
+    if (error) throw error;
+    bdState.entries.unshift(data);
+    bdCloseAddModal();
+    bdRenderLedger();
+    toast('已记录 💰');
+  } catch { toast('保存失败，请检查网络'); }
+}
+
+async function bdDeleteEntry(id) {
+  if (!confirm('删除这条记录？')) return;
+  try {
+    const { error } = await sb.from('hb_budget_entries').delete().eq('id', id);
+    if (error) throw error;
+    bdState.entries = bdState.entries.filter(e => e.id !== id);
+    bdRenderLedger();
+    toast('已删除');
+  } catch { toast('删除失败'); }
+}
+
+// ════════════════════════════════════════
+// ════════════════════════════════════════
 // CHORES
 // ════════════════════════════════════════
 // ════════════════════════════════════════
@@ -2271,7 +2768,7 @@ const HW_DEFAULTS = [
   { name:'倒垃圾', emoji:'🗑️' },
 ];
 
-const hwState = { tasks: [], logs: [] };
+const hwState = { tasks: [], logs: [], pendingTaskId: null };
 
 async function hwInitDefaults() {
   for (const t of HW_DEFAULTS) {
@@ -2319,19 +2816,30 @@ function hwRender() {
   });
 }
 
-async function hwLog(taskId) {
+function hwLog(taskId) {
+  const task = hwState.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  hwState.pendingTaskId = taskId;
+  document.getElementById('hw-who-title').textContent = `${task.emoji} ${task.name} — 谁做的？`;
+  document.getElementById('hw-who-modal').classList.add('show');
+}
+function hwCloseWhoModal() { document.getElementById('hw-who-modal').classList.remove('show'); }
+
+async function hwConfirmWho(who) {
+  document.getElementById('hw-who-modal').classList.remove('show');
+  const taskId = hwState.pendingTaskId;
+  hwState.pendingTaskId = null;
   const task = hwState.tasks.find(t => t.id === taskId);
   if (!task) return;
 
-  // Pop animation
   const btn = document.getElementById(`hwb-${taskId}`);
   if (btn) { btn.classList.add('popping'); btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true }); }
 
-  const entry = { id: `l${Date.now()}`, taskId, taskName: task.name, taskEmoji: task.emoji, doneAt: Date.now() };
+  const entry = { id: `l${Date.now()}`, taskId, taskName: task.name, taskEmoji: task.emoji, who, doneAt: Date.now() };
   await clDbPut('hw_logs', entry);
   hwState.logs.unshift(entry);
   hwRender();
-  toast(`${task.emoji} ${task.name} ✓`);
+  toast(`${task.emoji} ${task.name} · ${who} ✓`);
 }
 
 function hwContextMenu(e, id) {
@@ -2381,9 +2889,11 @@ function hwShowHistory() {
     list.innerHTML = hwState.logs.slice(0, 100).map(l => {
       const d = new Date(l.doneAt);
       const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const whoColor = l.who === 'TA' ? '#3b82f6' : '#db2777';
       return `<div class="hw-log-item">
         <span class="hw-log-emoji">${l.taskEmoji || '✅'}</span>
         <span class="hw-log-name">${esc(l.taskName)}</span>
+        ${l.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoColor}20;color:${whoColor};font-weight:700">${l.who}</span>` : ''}
         <span class="hw-log-time">${time}</span>
       </div>`;
     }).join('');
