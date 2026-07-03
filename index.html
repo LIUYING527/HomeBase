@@ -27,8 +27,12 @@
       --shadow: 0 2px 12px rgba(0,0,0,0.08);
       --r: 16px;
       --r-sm: 10px;
+      --nav-h: 64px;
+      /* Closet accent */
+      --cl-rose: #E8B4B8;
+      --cl-rose-dark: #C0737A;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
       background: var(--bg);
@@ -85,8 +89,60 @@
     }
     .btn-primary:active { opacity: .85; }
 
-    /* ─── App ─── */
-    #app { display: none; min-height: 100vh; padding-bottom: 90px; }
+    /* ─── Main bottom nav ─── */
+    .main-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      display: none; z-index: 150;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .main-nav.visible { display: flex; }
+    .main-nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; gap: 3px;
+      color: var(--text-3); font-size: 11px; font-weight: 500;
+      transition: color .2s; user-select: none;
+    }
+    .main-nav-item .nav-ico { font-size: 22px; line-height: 1; }
+    .main-nav-item[data-sec="homebase"].active { color: var(--primary); }
+    .main-nav-item[data-sec="closet"].active { color: var(--cl-rose-dark); }
+
+    /* ─── FABs ─── */
+    .fab {
+      position: fixed; border-radius: 50%; border: none; cursor: pointer; color: white;
+      display: none; align-items: center; justify-content: center;
+      font-size: 28px; z-index: 200; transition: transform .2s;
+    }
+    .fab:active { transform: scale(.92); }
+    .fab.visible { display: flex; }
+    #fab-add {
+      bottom: calc(var(--nav-h) + 20px); right: 24px;
+      width: 56px; height: 56px;
+      background: var(--primary); box-shadow: 0 4px 20px rgba(92,184,122,.4);
+    }
+    #fab-ai {
+      bottom: calc(var(--nav-h) + 90px); right: 26px;
+      width: 48px; height: 48px; font-size: 22px;
+      background: #7c3aed; box-shadow: 0 4px 16px rgba(124,58,237,.35);
+    }
+    #fab-cl-add {
+      bottom: calc(var(--nav-h) + 20px); right: 24px;
+      width: 56px; height: 56px;
+      background: #2E2E2E; box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+
+    /* ═══════════════════════════════
+       HOMEBASE SECTION
+    ═══════════════════════════════ */
+    #section-homebase {
+      display: none;
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 120px);
+    }
 
     /* ─── Topbar ─── */
     .topbar {
@@ -151,7 +207,6 @@
 
     /* ─── Items Area ─── */
     .items-area { padding: 4px 18px 16px; }
-
     .restock-bar {
       display: none; align-items: center; gap: 10px;
       padding: 10px 14px; margin-bottom: 14px;
@@ -163,12 +218,10 @@
       margin-left: auto; background: var(--accent); color: white;
       border-radius: 50px; padding: 2px 9px; font-size: 12px; font-weight: 700;
     }
-
     .items-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     }
     @media (min-width: 540px) { .items-grid { grid-template-columns: repeat(3,1fr); } }
-
     .item-card {
       background: var(--surface); border-radius: var(--r);
       padding: 14px 14px 12px; box-shadow: var(--shadow);
@@ -190,29 +243,12 @@
       position: absolute; top: 11px; right: 11px;
       width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
     }
-
     .empty-state {
       text-align: center; padding: 60px 20px; color: var(--text-3);
     }
     .empty-icon { font-size: 48px; margin-bottom: 14px; }
     .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text-2); }
     .empty-sub { font-size: 13px; }
-
-    /* ─── FABs ─── */
-    .fab {
-      position: fixed; bottom: 24px; right: 24px;
-      width: 56px; height: 56px; border-radius: 50%;
-      border: none; cursor: pointer; color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px; z-index: 200; transition: transform .2s;
-    }
-    .fab:active { transform: scale(.92); }
-    #fab-add { background: var(--primary); box-shadow: 0 4px 20px rgba(92,184,122,.4); }
-    #fab-ai {
-      bottom: 92px; right: 26px;
-      width: 48px; height: 48px; font-size: 22px;
-      background: #7c3aed; box-shadow: 0 4px 16px rgba(124,58,237,.35);
-    }
 
     /* ─── Modal Base ─── */
     .modal-overlay {
@@ -261,8 +297,7 @@
     .add-tag-input:focus { border-color: var(--primary); }
     .add-tag-btn {
       padding: 9px 14px; background: var(--primary); color: white;
-      border: none; border-radius: 8px; cursor: pointer; font-size: 13px;
-      font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
     }
 
     /* ─── Btn Row ─── */
@@ -283,10 +318,7 @@
     .detail-name { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
     .detail-brand { font-size: 15px; color: var(--text-3); margin-bottom: 18px; }
     .detail-sec { margin-bottom: 16px; }
-    .detail-sec-label {
-      font-size: 11px; font-weight: 700; color: var(--text-3);
-      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px;
-    }
+    .detail-sec-label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
     .detail-sec-body { font-size: 14px; color: var(--text); line-height: 1.6; }
     .detail-link { color: var(--primary); text-decoration: none; word-break: break-all; font-size: 14px; }
     .restock-toggle {
@@ -311,14 +343,8 @@
 
     /* ─── Settings ─── */
     .settings-sec { margin-bottom: 24px; }
-    .settings-sec-title {
-      font-size: 11px; font-weight: 700; color: var(--text-3);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
-    }
-    .settings-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 13px 0; border-bottom: 1px solid var(--border);
-    }
+    .settings-sec-title { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); }
     .settings-label { font-size: 15px; font-weight: 500; }
     .settings-val { font-size: 13px; color: var(--text-3); }
 
@@ -330,51 +356,291 @@
     #chat-modal.show { display: flex; }
     .chat-bar {
       background: #7c3aed; padding: 15px 18px;
-      display: flex; align-items: center; gap: 12px; color: white;
+      display: flex; align-items: center; gap: 12px; color: white; flex-shrink: 0;
+    }
+    .chat-bar-back { background: none; border: none; color: white; cursor: pointer; font-size: 24px; line-height: 1; padding: 0; }
+    .chat-bar-title { font-size: 18px; font-weight: 700; flex: 1; }
+    .chat-bar-clear { background: none; border: none; color: rgba(255,255,255,.7); cursor: pointer; font-size: 13px; font-family: inherit; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 18px 18px 10px; display: flex; flex-direction: column; gap: 12px; }
+    .msg { max-width: 86%; padding: 12px 15px; border-radius: 16px; font-size: 14px; line-height: 1.55; }
+    .msg.user { background: #7c3aed; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.ai { background: var(--bg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.thinking { font-style: italic; color: var(--text-3); }
+    .chat-input-bar { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .chat-input { flex: 1; padding: 11px 16px; border: 1.5px solid var(--border); border-radius: 50px; font-size: 15px; outline: none; font-family: inherit; }
+    .chat-input:focus { border-color: #7c3aed; }
+    .chat-send { width: 42px; height: 42px; border-radius: 50%; background: #7c3aed; color: white; border: none; cursor: pointer; font-size: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+    /* ═══════════════════════════════
+       CLOSET SECTION
+    ═══════════════════════════════ */
+    #section-closet {
+      display: none;
+      flex-direction: column;
+      height: calc(100vh - var(--nav-h));
+      height: calc(100dvh - var(--nav-h));
+      overflow: hidden;
+    }
+
+    /* Closet sticky header */
+    .cl-header {
+      background: var(--bg);
+      padding: 48px 18px 0;
       flex-shrink: 0;
     }
-    .chat-bar-back {
-      background: none; border: none; color: white; cursor: pointer;
-      font-size: 24px; line-height: 1; padding: 0;
+    .cl-title { font-size: 28px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 3px; }
+    .cl-sub-title { font-size: 13px; color: var(--text-3); margin-bottom: 14px; }
+
+    /* Closet sub-tabs */
+    .cl-sub-tabs {
+      display: flex; gap: 0;
+      background: var(--border); border-radius: 12px; padding: 3px;
     }
-    .chat-bar-title { font-size: 18px; font-weight: 700; flex: 1; }
-    .chat-bar-clear {
-      background: none; border: none; color: rgba(255,255,255,.7);
-      cursor: pointer; font-size: 13px; font-family: inherit;
+    .cl-sub-tab {
+      flex: 1; padding: 8px 0; border-radius: 10px;
+      font-size: 14px; font-weight: 600; text-align: center;
+      cursor: pointer; border: none;
+      background: transparent; color: var(--text-3);
+      transition: all .2s;
     }
-    .chat-messages {
-      flex: 1; overflow-y: auto; padding: 18px 18px 10px;
-      display: flex; flex-direction: column; gap: 12px;
+    .cl-sub-tab.active {
+      background: var(--surface); color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
-    .msg {
-      max-width: 86%; padding: 12px 15px;
-      border-radius: 16px; font-size: 14px; line-height: 1.55;
+
+    /* Sub-pages */
+    .cl-page {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: none; flex-direction: column;
+      padding-bottom: calc(var(--nav-h) + 20px);
     }
-    .msg.user {
-      background: #7c3aed; color: white;
-      align-self: flex-end; border-bottom-right-radius: 4px;
+    .cl-page.active { display: flex; }
+
+    /* Wardrobe category filter */
+    .cl-cat-tabs {
+      display: flex; gap: 8px; padding: 14px 18px 10px;
+      overflow-x: auto; scrollbar-width: none;
     }
-    .msg.ai {
+    .cl-cat-tabs::-webkit-scrollbar { display: none; }
+    .cl-cat-tab {
+      padding: 6px 14px; border-radius: 50px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; white-space: nowrap;
+      cursor: pointer; color: var(--text-2); transition: all .15s;
+    }
+    .cl-cat-tab.active {
+      background: #2E2E2E; border-color: #2E2E2E; color: white;
+    }
+
+    /* Clothes grid */
+    .cl-clothes-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 12px; padding: 4px 16px 16px;
+    }
+    .cl-cloth-card {
+      background: var(--surface); border-radius: var(--r);
+      overflow: hidden; box-shadow: var(--shadow);
+      cursor: pointer; position: relative;
+      aspect-ratio: 3/4; transition: transform .15s;
+    }
+    .cl-cloth-card:active { transform: scale(.97); }
+    .cl-cloth-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cl-cloth-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 20px 10px 10px;
+      background: linear-gradient(transparent, rgba(0,0,0,.45));
+      color: white;
+    }
+    .cl-cloth-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .cl-cloth-meta { font-size: 11px; opacity: .8; margin-top: 2px; }
+
+    /* Closet empty state */
+    .cl-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 40px; color: var(--text-3);
+    }
+    .cl-empty-ico { font-size: 52px; }
+    .cl-empty-txt { font-size: 15px; text-align: center; line-height: 1.6; }
+
+    /* ─── Style board ─── */
+    .cl-style-board {
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;
+    }
+    .cl-slot {
+      background: var(--surface); border-radius: var(--r);
+      padding: 14px; display: flex; align-items: center;
+      gap: 14px; box-shadow: var(--shadow); cursor: pointer;
+      transition: transform .15s; min-height: 86px;
+    }
+    .cl-slot:active { transform: scale(.98); }
+    .cl-slot-thumb {
+      width: 62px; height: 72px; border-radius: 11px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .cl-slot-empty {
+      width: 62px; height: 72px; border-radius: 11px;
+      background: var(--bg); display: flex; align-items: center;
+      justify-content: center; font-size: 26px; flex-shrink: 0;
+    }
+    .cl-slot-info { flex: 1; min-width: 0; }
+    .cl-slot-label { font-size: 12px; color: var(--text-3); margin-bottom: 4px; }
+    .cl-slot-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cl-slot-hint { font-size: 14px; color: var(--text-3); }
+    .cl-slot-arrow { font-size: 18px; color: var(--text-3); flex-shrink: 0; }
+    .cl-slot-rm { font-size: 16px; color: var(--text-3); padding: 6px; flex-shrink: 0; line-height: 1; }
+
+    .cl-style-actions {
+      padding: 4px 16px 16px;
+      display: flex; gap: 10px;
+    }
+    .cl-btn-ghost {
+      padding: 14px 20px; border-radius: 14px;
       background: var(--bg); color: var(--text);
-      align-self: flex-start; border-bottom-left-radius: 4px;
+      font-size: 15px; font-weight: 600;
+      border: 1.5px solid var(--border); cursor: pointer;
+      font-family: inherit;
     }
-    .msg.thinking { font-style: italic; color: var(--text-3); }
-    .chat-input-bar {
-      padding: 14px 18px; border-top: 1px solid var(--border);
-      display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    .cl-btn-dark {
+      flex: 2; padding: 14px; border-radius: 14px;
+      background: #2E2E2E; color: white;
+      font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer; font-family: inherit;
     }
-    .chat-input {
-      flex: 1; padding: 11px 16px;
-      border: 1.5px solid var(--border); border-radius: 50px;
-      font-size: 15px; outline: none; font-family: inherit;
+
+    /* ─── Outfit records ─── */
+    .cl-records-list {
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 14px;
     }
-    .chat-input:focus { border-color: #7c3aed; }
-    .chat-send {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: #7c3aed; color: white; border: none;
-      cursor: pointer; font-size: 20px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+    .cl-outfit-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 15px; box-shadow: var(--shadow);
     }
+    .cl-outfit-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .cl-outfit-name { font-size: 16px; font-weight: 700; }
+    .cl-outfit-date { font-size: 12px; color: var(--text-3); }
+    .cl-outfit-thumbs {
+      display: flex; gap: 8px; overflow-x: auto;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .cl-outfit-thumbs::-webkit-scrollbar { display: none; }
+    .cl-outfit-thumb {
+      width: 70px; height: 82px; object-fit: cover;
+      border-radius: 10px; flex-shrink: 0;
+    }
+    .cl-outfit-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 11px;
+    }
+    .cl-outfit-tags-txt { font-size: 12px; color: var(--text-3); }
+    .cl-outfit-del { font-size: 13px; color: var(--text-3); cursor: pointer; padding: 4px 0; }
+
+    /* ─── Closet modals ─── */
+    /* Upload area */
+    .cl-upload-area {
+      border: 2px dashed var(--cl-rose);
+      border-radius: var(--r); background: var(--surface);
+      cursor: pointer; position: relative; overflow: hidden;
+      min-height: 160px; display: flex; align-items: center; justify-content: center;
+    }
+    .cl-upload-ph { text-align: center; padding: 24px; }
+    .cl-upload-ico { font-size: 40px; }
+    .cl-upload-hint { font-size: 14px; color: var(--text-3); margin-top: 8px; }
+    .cl-upload-prev { width: 100%; max-height: 220px; object-fit: contain; display: none; }
+    .cl-ai-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--cl-rose-dark); color: white;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px;
+      display: none; align-items: center; gap: 5px;
+    }
+    .cl-ai-badge.show { display: flex; }
+    .cl-ai-spin {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,.4); border-top-color: white;
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+
+    /* Cat selector in modal */
+    .cl-cat-sel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cl-cat-sel-btn {
+      padding: 8px 15px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s;
+      font-family: inherit;
+    }
+    .cl-cat-sel-btn.on { background: #2E2E2E; border-color: #2E2E2E; color: white; }
+
+    /* Picker grid */
+    .cl-picker-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; max-height: 52vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cl-picker-item {
+      aspect-ratio: 3/4; border-radius: 12px; overflow: hidden;
+      cursor: pointer; position: relative;
+      border: 2.5px solid transparent; transition: border-color .15s;
+    }
+    .cl-picker-item.on { border-color: var(--cl-rose-dark); }
+    .cl-picker-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cl-picker-name {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 14px 6px 6px;
+      background: linear-gradient(transparent, rgba(0,0,0,.45));
+      color: white; font-size: 11px; font-weight: 500;
+    }
+    .cl-picker-chk {
+      position: absolute; top: 6px; right: 6px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--cl-rose-dark); color: white;
+      font-size: 12px; display: none;
+      align-items: center; justify-content: center;
+    }
+    .cl-picker-item.on .cl-picker-chk { display: flex; }
+
+    /* Save outfit name input */
+    .cl-input {
+      width: 100%; padding: 13px 16px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); font-size: 15px; color: var(--text);
+      background: var(--bg); outline: none; transition: border-color .2s;
+      font-family: inherit; margin-top: 4px;
+    }
+    .cl-input:focus { border-color: var(--cl-rose); }
+
+    .cl-btn-primary {
+      width: 100%; padding: 15px; border-radius: 14px;
+      background: #2E2E2E; color: white;
+      font-size: 16px; font-weight: 700;
+      border: none; cursor: pointer; margin-top: 16px;
+      font-family: inherit; transition: opacity .2s;
+    }
+    .cl-btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+    .cl-btn-row { display: flex; gap: 10px; }
+    .cl-btn-secondary {
+      padding: 14px 20px; border-radius: 14px;
+      background: var(--bg); color: var(--text);
+      font-size: 15px; font-weight: 600;
+      border: 1.5px solid var(--border); cursor: pointer;
+      font-family: inherit; margin-top: 16px;
+    }
+
+    /* ─── Toast ─── */
+    .toast {
+      position: fixed; bottom: calc(var(--nav-h) + 20px);
+      left: 50%; transform: translateX(-50%);
+      background: rgba(26,26,26,.82);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      color: white; padding: 10px 22px;
+      border-radius: 24px; font-size: 14px; font-weight: 500;
+      z-index: 400; pointer-events: none;
+      opacity: 0; transition: opacity .2s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -389,7 +655,7 @@
 <div id="login-screen">
   <div class="login-icon">🏠</div>
   <div class="login-title">HomeBase</div>
-  <div class="login-sub">家庭好物知识库</div>
+  <div class="login-sub">家庭好物 · 电子衣橱</div>
   <div class="login-card">
     <div class="field-group">
       <label class="field-label">访问密码</label>
@@ -400,9 +666,8 @@
   </div>
 </div>
 
-<!-- App -->
-<div id="app">
-  <!-- Topbar -->
+<!-- ═══ HOMEBASE SECTION ═══ -->
+<div id="section-homebase">
   <div class="topbar">
     <div class="topbar-row1">
       <div class="logo">
@@ -420,10 +685,8 @@
     </div>
   </div>
 
-  <!-- Category Tabs -->
   <div class="cat-tabs" id="cat-tabs"></div>
 
-  <!-- Items -->
   <div class="items-area">
     <div class="restock-bar" id="restock-bar" onclick="toggleRestockFilter()">
       <span>⚠️</span>
@@ -439,16 +702,77 @@
   </div>
 </div>
 
-<!-- FABs -->
-<button class="fab" id="fab-add" style="display:none" onclick="openAddModal()">＋</button>
-<button class="fab" id="fab-ai" style="display:none" onclick="openChat()">✨</button>
+<!-- ═══ CLOSET SECTION ═══ -->
+<div id="section-closet">
+  <div class="cl-header">
+    <div class="cl-title">衣橱</div>
+    <div class="cl-sub-title" id="cl-sub-title">0 件单品</div>
+    <div class="cl-sub-tabs">
+      <button class="cl-sub-tab active" data-pg="wardrobe" onclick="clSwitchPage('wardrobe')">衣柜</button>
+      <button class="cl-sub-tab" data-pg="style" onclick="clSwitchPage('style')">搭配</button>
+      <button class="cl-sub-tab" data-pg="record" onclick="clSwitchPage('record')">穿搭记录</button>
+    </div>
+  </div>
 
-<!-- ─── Add/Edit Modal ─── -->
+  <!-- Wardrobe page -->
+  <div class="cl-page active" id="cl-pg-wardrobe">
+    <div class="cl-cat-tabs" id="cl-cat-tabs">
+      <button class="cl-cat-tab active" data-cat="all">全部</button>
+      <button class="cl-cat-tab" data-cat="top">上装</button>
+      <button class="cl-cat-tab" data-cat="bottom">下装</button>
+      <button class="cl-cat-tab" data-cat="outer">外套</button>
+      <button class="cl-cat-tab" data-cat="shoes">鞋子</button>
+      <button class="cl-cat-tab" data-cat="accessory">配饰</button>
+    </div>
+    <div class="cl-clothes-grid" id="cl-clothes-grid"></div>
+    <div class="cl-empty" id="cl-wardrobe-empty" style="display:none">
+      <div class="cl-empty-ico">👗</div>
+      <div class="cl-empty-txt">衣橱空空的<br>点右下角 + 添加第一件</div>
+    </div>
+  </div>
+
+  <!-- Style page -->
+  <div class="cl-page" id="cl-pg-style">
+    <div class="cl-style-board" id="cl-style-board"></div>
+    <div class="cl-style-actions">
+      <button class="cl-btn-ghost" onclick="clClearOutfit()">清空</button>
+      <button class="cl-btn-dark" onclick="clPromptSave()">保存这套穿搭</button>
+    </div>
+  </div>
+
+  <!-- Record page -->
+  <div class="cl-page" id="cl-pg-record">
+    <div class="cl-records-list" id="cl-records-list"></div>
+    <div class="cl-empty" id="cl-record-empty" style="display:none">
+      <div class="cl-empty-ico">✨</div>
+      <div class="cl-empty-txt">还没有保存的穿搭<br>在搭配页组合好后保存</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN NAV ═══ -->
+<nav class="main-nav" id="main-nav">
+  <div class="main-nav-item active" data-sec="homebase" onclick="switchSection('homebase')">
+    <span class="nav-ico">🏠</span><span>好物库</span>
+  </div>
+  <div class="main-nav-item" data-sec="closet" onclick="switchSection('closet')">
+    <span class="nav-ico">👗</span><span>衣橱</span>
+  </div>
+</nav>
+
+<!-- FABs -->
+<button class="fab" id="fab-add" onclick="openAddModal()">＋</button>
+<button class="fab" id="fab-ai" onclick="openChat()">✨</button>
+<button class="fab" id="fab-cl-add" onclick="clOpenAddModal()">＋</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── HomeBase: Add/Edit Modal ─── -->
 <div class="modal-overlay" id="item-modal" onclick="if(event.target===this)closeItemModal()">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="item-modal-title">添加好物</div>
-
     <div class="field-group">
       <label class="field-label">名称 *</label>
       <input class="field-input" type="text" id="f-name" placeholder="如：牙膏、洗碗液">
@@ -485,7 +809,6 @@
         <button class="add-tag-btn" onclick="addTagFromInput()">添加</button>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeItemModal()">取消</button>
       <button class="btn-primary" style="flex:1" onclick="saveItem()">保存</button>
@@ -493,7 +816,7 @@
   </div>
 </div>
 
-<!-- ─── Detail Modal ─── -->
+<!-- ─── HomeBase: Detail Modal ─── -->
 <div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeDetailModal()">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -501,14 +824,13 @@
   </div>
 </div>
 
-<!-- ─── Settings Modal ─── -->
+<!-- ─── HomeBase: Settings Modal ─── -->
 <div class="modal-overlay" id="settings-modal" onclick="if(event.target===this)closeSettings()">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">设置</div>
-
     <div class="settings-sec">
-      <div class="settings-sec-title">AI 助手</div>
+      <div class="settings-sec-title">AI 助手（好物库 + 衣橱共用）</div>
       <div class="settings-row">
         <span class="settings-label">DeepSeek API Key</span>
         <span class="settings-val" id="api-key-val">未设置</span>
@@ -518,7 +840,6 @@
         <button class="btn-primary" onclick="saveApiKey()">保存 Key</button>
       </div>
     </div>
-
     <div class="settings-sec">
       <div class="settings-sec-title">标签管理</div>
       <div id="tags-manager-list"></div>
@@ -527,7 +848,6 @@
         <button class="add-tag-btn" onclick="addGlobalTag()">添加</button>
       </div>
     </div>
-
     <div class="settings-sec">
       <div class="settings-sec-title">账户</div>
       <button class="btn-secondary" style="width:100%" onclick="logout()">退出登录</button>
@@ -535,7 +855,7 @@
   </div>
 </div>
 
-<!-- ─── AI Chat ─── -->
+<!-- ─── HomeBase: AI Chat ─── -->
 <div id="chat-modal">
   <div class="chat-bar">
     <button class="chat-bar-back" onclick="closeChat()">←</button>
@@ -552,36 +872,119 @@
   </div>
 </div>
 
+<!-- ─── Closet: Add Clothes Modal ─── -->
+<div class="modal-overlay" id="cl-add-modal" onclick="if(event.target===this)clCloseAddModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">添加单品</div>
+
+    <div class="cl-upload-area" onclick="document.getElementById('cl-file-inp').click()">
+      <input type="file" id="cl-file-inp" accept="image/*" capture="environment" style="display:none" onchange="clOnFile(event)">
+      <div class="cl-upload-ph" id="cl-upload-ph">
+        <div class="cl-upload-ico">📷</div>
+        <div class="cl-upload-hint">拍照 / 从相册选择</div>
+      </div>
+      <img class="cl-upload-prev" id="cl-upload-prev">
+      <div class="cl-ai-badge" id="cl-ai-badge">
+        <span class="cl-ai-spin"></span> AI 识别中
+      </div>
+    </div>
+
+    <div class="field-group" style="margin-top:16px">
+      <label class="field-label">单品名称</label>
+      <input class="field-input" id="cl-inp-name" placeholder="例：奶白色宽松卫衣">
+    </div>
+    <div class="field-group">
+      <label class="field-label">分类</label>
+      <div class="cl-cat-sel-row">
+        <button class="cl-cat-sel-btn" data-cat="top" onclick="clPickCat('top')">上装</button>
+        <button class="cl-cat-sel-btn" data-cat="bottom" onclick="clPickCat('bottom')">下装</button>
+        <button class="cl-cat-sel-btn" data-cat="outer" onclick="clPickCat('outer')">外套</button>
+        <button class="cl-cat-sel-btn" data-cat="shoes" onclick="clPickCat('shoes')">鞋子</button>
+        <button class="cl-cat-sel-btn" data-cat="accessory" onclick="clPickCat('accessory')">配饰</button>
+      </div>
+    </div>
+    <button class="cl-btn-primary" id="cl-btn-save-cloth" onclick="clSaveCloth()" disabled>保存到衣橱</button>
+  </div>
+</div>
+
+<!-- ─── Closet: Picker Modal ─── -->
+<div class="modal-overlay" id="cl-picker-modal" onclick="if(event.target===this)document.getElementById('cl-picker-modal').classList.remove('show')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cl-picker-title">选择上装</div>
+    <div class="cl-picker-grid" id="cl-picker-grid"></div>
+    <div class="cl-btn-row">
+      <button class="cl-btn-secondary" onclick="document.getElementById('cl-picker-modal').classList.remove('show')">取消</button>
+      <button class="cl-btn-primary" style="flex:2;margin-top:16px" onclick="clConfirmPick()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Closet: Save Outfit Modal ─── -->
+<div class="modal-overlay" id="cl-save-modal" onclick="if(event.target===this)document.getElementById('cl-save-modal').classList.remove('show')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">给这套穿搭起个名字</div>
+    <input class="cl-input" id="cl-outfit-name" placeholder="例：日常通勤、约会、周末逛街…">
+    <button class="cl-btn-primary" onclick="clConfirmSave()">保存</button>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════
-// CONFIG
+// SHARED CONFIG
 // ════════════════════════════════════════
-// 修改 APP_PASSWORD 可更换访问密码
 const APP_PASSWORD = '020124';
-const SUPABASE_URL  = 'https://wzlypptsytnqfsmwxpzf.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_9rXFdTyDO2yai9uLBRJSNQ_6irPiu6E';
-const PRESET_CATS   = ['全部', '洗护', '清洁', '厨房', '食品', '其他'];
-const PRESET_TAGS   = ['日用', '高频', '囤货', '备用', '季节性'];
+const SUPABASE_URL = 'https://wzlypptsytnqfsmwxpzf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9rXFdTyDO2yai9uLBRJSNQ_6irPiu6E';
+const PRESET_CATS  = ['全部', '洗护', '清洁', '厨房', '食品', '其他'];
+const PRESET_TAGS  = ['日用', '高频', '囤货', '备用', '季节性'];
 
 // ════════════════════════════════════════
-// STATE
+// SHARED STATE & UTILS
 // ════════════════════════════════════════
-let sb, items = [], currentCat = '全部', editingId = null;
-let selectedTags = [], allTags = [...PRESET_TAGS], restockOnly = false;
-let chatHistory = [];
+let currentSection = 'homebase';
+
+function switchSection(name) {
+  currentSection = name;
+  document.getElementById('section-homebase').style.display = name === 'homebase' ? 'block' : 'none';
+  const cl = document.getElementById('section-closet');
+  cl.style.display = name === 'closet' ? 'flex' : 'none';
+
+  document.querySelectorAll('.main-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.sec === name);
+  });
+
+  // FAB visibility
+  document.getElementById('fab-add').classList.toggle('visible', name === 'homebase');
+  document.getElementById('fab-ai').classList.toggle('visible', name === 'homebase');
+  const clPage = document.querySelector('.cl-sub-tab.active')?.dataset.pg;
+  document.getElementById('fab-cl-add').classList.toggle('visible', name === 'closet' && clPage === 'wardrobe');
+}
+
+let toastT;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2300);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(ts) {
+  const d = ts ? new Date(ts) : new Date();
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
 
 // ════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // Load saved tags
-  const saved = localStorage.getItem('hb_tags');
-  if (saved) {
-    try { allTags = JSON.parse(saved); } catch {}
-  }
-
   setTimeout(() => {
     document.getElementById('loading').style.display = 'none';
     if (localStorage.getItem('hb_auth') === '1') {
@@ -596,9 +999,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ════════════════════════════════════════
-// AUTH
-// ════════════════════════════════════════
 function login() {
   const v = document.getElementById('pwd-input').value;
   if (v === APP_PASSWORD) {
@@ -617,40 +1017,52 @@ function logout() {
   location.reload();
 }
 
-// ════════════════════════════════════════
-// APP START
-// ════════════════════════════════════════
 async function startApp() {
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('fab-add').style.display = 'flex';
-  document.getElementById('fab-ai').style.display = 'flex';
+  document.getElementById('section-homebase').style.display = 'block';
+  document.getElementById('main-nav').classList.add('visible');
+  document.getElementById('fab-add').classList.add('visible');
+  document.getElementById('fab-ai').classList.add('visible');
 
-  // API key display
   const key = localStorage.getItem('hb_api_key');
   if (key) {
     document.getElementById('api-key-val').textContent = key.slice(0, 8) + '…';
     document.getElementById('api-key-input').value = key;
   }
 
+  // Init HomeBase
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const saved = localStorage.getItem('hb_tags');
+  if (saved) { try { allTags = JSON.parse(saved); } catch {} }
   renderCatTabs();
   await loadItems();
   subscribeRealtime();
+
+  // Init Closet
+  await clDbInit();
+  clState.clothes = await clDbAll('cl_clothes');
+  clState.outfits = (await clDbAll('cl_outfits')).sort((a,b) => b.savedAt - a.savedAt);
+  clRenderWardrobe();
+  clRenderStyleBoard();
+  clRenderRecords();
 }
 
 // ════════════════════════════════════════
-// DATA
 // ════════════════════════════════════════
+// HOMEBASE
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+let sb, items = [], currentCat = '全部', editingId = null;
+let selectedTags = [], allTags = [...PRESET_TAGS], restockOnly = false;
+let chatHistory = [];
+
 async function loadItems() {
   setSyncState('syncing');
   try {
-    const { data, error } = await sb
-      .from('homebase_items')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await sb.from('homebase_items').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     items = data || [];
     setSyncState('ok');
-  } catch (e) {
+  } catch {
     setSyncState('err');
     const cached = localStorage.getItem('hb_cache');
     if (cached) { try { items = JSON.parse(cached); } catch {} }
@@ -670,49 +1082,35 @@ function subscribeRealtime() {
         items = items.filter(i => i.id !== payload.old.id);
       }
       renderItems();
-    })
-    .subscribe();
+    }).subscribe();
 }
 
 function setSyncState(s) {
   const d = document.getElementById('sync-dot');
-  d.className = 'sync-dot' + (s === 'syncing' ? ' syncing' : s === 'err' ? ' err' : '');
+  d.className = 'sync-dot' + (s==='syncing'?' syncing':s==='err'?' err':'');
 }
 
-// ════════════════════════════════════════
-// RENDER
-// ════════════════════════════════════════
 function renderCatTabs() {
   document.getElementById('cat-tabs').innerHTML = PRESET_CATS.map(c =>
-    `<button class="cat-tab ${c === currentCat ? 'active' : ''}" onclick="setCat('${c}')">${c}</button>`
+    `<button class="cat-tab ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`
   ).join('');
 }
 
-function setCat(c) {
-  currentCat = c;
-  restockOnly = false;
-  renderCatTabs();
-  renderItems();
-}
+function setCat(c) { currentCat = c; restockOnly = false; renderCatTabs(); renderItems(); }
 
-function toggleRestockFilter() {
-  restockOnly = !restockOnly;
-  renderItems();
-}
+function toggleRestockFilter() { restockOnly = !restockOnly; renderItems(); }
 
 function renderItems() {
   const q = document.getElementById('search-input').value.toLowerCase();
   let list = items;
-
   if (currentCat !== '全部') list = list.filter(i => i.category === currentCat);
   if (restockOnly) list = list.filter(i => i.needs_restock);
   if (q) list = list.filter(i =>
     i.name.toLowerCase().includes(q) ||
-    (i.brand || '').toLowerCase().includes(q) ||
-    (i.notes || '').toLowerCase().includes(q)
+    (i.brand||'').toLowerCase().includes(q) ||
+    (i.notes||'').toLowerCase().includes(q)
   );
 
-  // Restock bar
   const rc = items.filter(i => i.needs_restock).length;
   const bar = document.getElementById('restock-bar');
   if (rc > 0 && !restockOnly) {
@@ -722,7 +1120,6 @@ function renderItems() {
 
   const grid = document.getElementById('items-grid');
   const empty = document.getElementById('empty-state');
-
   if (!list.length) {
     grid.innerHTML = '';
     empty.style.display = 'block';
@@ -731,7 +1128,7 @@ function renderItems() {
   } else {
     empty.style.display = 'none';
     grid.innerHTML = list.map(item => `
-      <div class="item-card ${item.needs_restock ? 'needs-restock' : ''}" onclick="openDetail('${item.id}')">
+      <div class="item-card ${item.needs_restock?'needs-restock':''}" onclick="openDetail('${item.id}')">
         ${item.needs_restock ? '<div class="restock-dot"></div>' : ''}
         <div class="item-card-cat">${item.category}</div>
         <div class="item-card-name">${esc(item.name)}</div>
@@ -740,33 +1137,25 @@ function renderItems() {
       </div>
     `).join('');
   }
-
   localStorage.setItem('hb_cache', JSON.stringify(items));
 }
 
-// ════════════════════════════════════════
-// DETAIL
-// ════════════════════════════════════════
 function openDetail(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
-
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-cat">${item.category}</div>
     <div class="detail-name">${esc(item.name)}</div>
     ${item.brand ? `<div class="detail-brand">${esc(item.brand)}</div>` : '<div style="height:14px"></div>'}
-
-    <div class="restock-toggle ${item.needs_restock ? 'on' : ''}" onclick="toggleRestock('${item.id}')">
-      <span style="font-size:20px">${item.needs_restock ? '⚠️' : '✅'}</span>
-      <span class="toggle-label">${item.needs_restock ? '需要补货' : '库存充足'}</span>
-      <div class="toggle-sw ${item.needs_restock ? 'on' : ''}"><div class="toggle-knob"></div></div>
+    <div class="restock-toggle ${item.needs_restock?'on':''}" onclick="toggleRestock('${item.id}')">
+      <span style="font-size:20px">${item.needs_restock?'⚠️':'✅'}</span>
+      <span class="toggle-label">${item.needs_restock?'需要补货':'库存充足'}</span>
+      <div class="toggle-sw ${item.needs_restock?'on':''}"><div class="toggle-knob"></div></div>
     </div>
-
     ${item.notes ? `<div class="detail-sec"><div class="detail-sec-label">备注</div><div class="detail-sec-body">${esc(item.notes)}</div></div>` : ''}
     ${item.link ? `<div class="detail-sec"><div class="detail-sec-label">购买链接</div><a class="detail-link" href="${esc(item.link)}" target="_blank">${esc(item.link)}</a></div>` : ''}
     ${item.tags?.length ? `<div class="detail-sec"><div class="detail-sec-label">标签</div><div class="item-card-tags" style="margin-top:4px">${item.tags.map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div></div>` : ''}
     <div class="detail-sec"><div class="detail-sec-label">添加时间</div><div class="detail-sec-body">${new Date(item.created_at).toLocaleDateString('zh-CN')}</div></div>
-
     <div class="btn-row">
       <button class="btn-danger" onclick="deleteItem('${item.id}')">删除</button>
       <button class="btn-secondary" onclick="closeDetailModal()">关闭</button>
@@ -781,9 +1170,7 @@ async function toggleRestock(id) {
   if (!item) return;
   const v = !item.needs_restock;
   try {
-    const { error } = await sb.from('homebase_items')
-      .update({ needs_restock: v, updated_at: new Date().toISOString() })
-      .eq('id', id);
+    const { error } = await sb.from('homebase_items').update({ needs_restock: v, updated_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
     item.needs_restock = v;
     renderItems();
@@ -802,16 +1189,10 @@ async function deleteItem(id) {
   } catch { alert('删除失败，请重试'); }
 }
 
-function closeDetailModal() {
-  document.getElementById('detail-modal').classList.remove('show');
-}
+function closeDetailModal() { document.getElementById('detail-modal').classList.remove('show'); }
 
-// ════════════════════════════════════════
-// ADD / EDIT
-// ════════════════════════════════════════
 function openAddModal() {
-  editingId = null;
-  selectedTags = [];
+  editingId = null; selectedTags = [];
   document.getElementById('item-modal-title').textContent = '添加好物';
   document.getElementById('f-name').value = '';
   document.getElementById('f-category').value = '洗护';
@@ -827,8 +1208,7 @@ function editItem(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
   closeDetailModal();
-  editingId = id;
-  selectedTags = [...(item.tags || [])];
+  editingId = id; selectedTags = [...(item.tags||[])];
   document.getElementById('item-modal-title').textContent = '编辑好物';
   document.getElementById('f-name').value = item.name;
   document.getElementById('f-category').value = item.category;
@@ -841,7 +1221,7 @@ function editItem(id) {
 
 function renderTagPicker() {
   document.getElementById('tag-suggestions').innerHTML = allTags.map(t =>
-    `<span class="tag-pill ${selectedTags.includes(t) ? 'on' : ''}" onclick="toggleTag('${esc(t)}')">${esc(t)}</span>`
+    `<span class="tag-pill ${selectedTags.includes(t)?'on':''}" onclick="toggleTag('${esc(t)}')">${esc(t)}</span>`
   ).join('');
   document.getElementById('selected-tags-display').innerHTML = selectedTags.map(t =>
     `<span class="sel-tag">${esc(t)}<span class="sel-tag-x" onclick="removeTag('${esc(t)}')">×</span></span>`
@@ -853,20 +1233,13 @@ function toggleTag(t) {
   else selectedTags.push(t);
   renderTagPicker();
 }
-
-function removeTag(t) {
-  selectedTags = selectedTags.filter(x => x !== t);
-  renderTagPicker();
-}
+function removeTag(t) { selectedTags = selectedTags.filter(x => x !== t); renderTagPicker(); }
 
 function addTagFromInput() {
   const inp = document.getElementById('new-tag-input');
   const t = inp.value.trim();
   if (!t) return;
-  if (!allTags.includes(t)) {
-    allTags.push(t);
-    localStorage.setItem('hb_tags', JSON.stringify(allTags));
-  }
+  if (!allTags.includes(t)) { allTags.push(t); localStorage.setItem('hb_tags', JSON.stringify(allTags)); }
   if (!selectedTags.includes(t)) selectedTags.push(t);
   inp.value = '';
   renderTagPicker();
@@ -875,7 +1248,6 @@ function addTagFromInput() {
 async function saveItem() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { document.getElementById('f-name').focus(); return; }
-
   const payload = {
     name,
     category: document.getElementById('f-category').value,
@@ -885,7 +1257,6 @@ async function saveItem() {
     tags: selectedTags,
     updated_at: new Date().toISOString()
   };
-
   setSyncState('syncing');
   try {
     if (editingId) {
@@ -898,38 +1269,24 @@ async function saveItem() {
       if (error) throw error;
       items.unshift(data);
     }
-    setSyncState('ok');
-    renderItems();
-    closeItemModal();
-  } catch (e) {
-    setSyncState('err');
-    alert('保存失败，请检查网络');
-  }
+    setSyncState('ok'); renderItems(); closeItemModal();
+  } catch { setSyncState('err'); alert('保存失败，请检查网络'); }
 }
 
-function closeItemModal() {
-  document.getElementById('item-modal').classList.remove('show');
-}
+function closeItemModal() { document.getElementById('item-modal').classList.remove('show'); }
 
-// ════════════════════════════════════════
-// SETTINGS
-// ════════════════════════════════════════
 function openSettings() {
   renderTagsManager();
   document.getElementById('settings-modal').classList.add('show');
 }
-
-function closeSettings() {
-  document.getElementById('settings-modal').classList.remove('show');
-}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('show'); }
 
 function renderTagsManager() {
   document.getElementById('tags-manager-list').innerHTML = allTags.map(t => `
     <div class="settings-row">
       <span class="settings-label">${esc(t)}</span>
-      ${PRESET_TAGS.includes(t)
-        ? '<span class="settings-val">预设</span>'
-        : `<button onclick="removeGlobalTag('${esc(t)}')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:20px;line-height:1;padding:0">×</button>`}
+      ${PRESET_TAGS.includes(t) ? '<span class="settings-val">预设</span>' :
+        `<button onclick="removeGlobalTag('${esc(t)}')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:20px;line-height:1;padding:0">×</button>`}
     </div>
   `).join('');
 }
@@ -956,20 +1313,14 @@ function saveApiKey() {
   localStorage.setItem('hb_api_key', k);
   document.getElementById('api-key-val').textContent = k.slice(0, 8) + '…';
   closeSettings();
+  toast('API Key 已保存');
 }
 
-// ════════════════════════════════════════
-// AI CHAT
-// ════════════════════════════════════════
 function openChat() {
   document.getElementById('chat-modal').classList.add('show');
   setTimeout(() => document.getElementById('chat-input').focus(), 100);
 }
-
-function closeChat() {
-  document.getElementById('chat-modal').classList.remove('show');
-}
-
+function closeChat() { document.getElementById('chat-modal').classList.remove('show'); }
 function clearChat() {
   chatHistory = [];
   document.getElementById('chat-messages').innerHTML =
@@ -980,44 +1331,24 @@ async function sendChat() {
   const inp = document.getElementById('chat-input');
   const msg = inp.value.trim();
   if (!msg) return;
-
   const apiKey = localStorage.getItem('hb_api_key');
-  if (!apiKey) {
-    closeChat();
-    openSettings();
-    return;
-  }
-
+  if (!apiKey) { closeChat(); openSettings(); return; }
   inp.value = '';
   const box = document.getElementById('chat-messages');
-
   box.innerHTML += `<div class="msg user">${esc(msg)}</div>`;
   const tid = 'thinking-' + Date.now();
   box.innerHTML += `<div class="msg ai thinking" id="${tid}">正在思考…</div>`;
   box.scrollTop = box.scrollHeight;
-
   chatHistory.push({ role: 'user', content: msg });
-
   const itemList = items.slice(0, 30).map(i =>
-    `- ${i.name}${i.brand ? `（${i.brand}）` : ''} [${i.category}]${i.needs_restock ? ' ⚠️需补货' : ''}`
+    `- ${i.name}${i.brand?`（${i.brand}）`:''} [${i.category}]${i.needs_restock?' ⚠️需补货':''}`
   ).join('\n') || '（暂无好物）';
-
-  const system = `你是HomeBase家庭好物助手，帮助用户管理家庭耗材采购。
-当前好物清单：
-${itemList}
-你的职责：推荐性价比高的产品（优先国内电商）、比较品牌差异、提醒补货、规划家庭采购、回答日用品使用选购问题。
-回答简洁中文，不超过200字，适当使用emoji让回复更友好。`;
-
+  const system = `你是HomeBase家庭好物助手，帮助用户管理家庭耗材采购。当前好物清单：\n${itemList}\n你的职责：推荐性价比高的产品（优先国内电商）、比较品牌差异、提醒补货、规划家庭采购。回答简洁中文，不超过200字，适当使用emoji。`;
   try {
     const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [{ role: 'system', content: system }, ...chatHistory],
-        max_tokens: 600,
-        stream: false
-      })
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'system', content: system }, ...chatHistory], max_tokens: 600 })
     });
     const data = await res.json();
     const reply = data.choices?.[0]?.message?.content || '抱歉，回复失败了';
@@ -1033,14 +1364,363 @@ ${itemList}
 }
 
 // ════════════════════════════════════════
-// UTILS
 // ════════════════════════════════════════
-function esc(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+// CLOSET
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+
+const CL_SLOTS = [
+  { key: 'outer',     label: '外套', emoji: '🧥' },
+  { key: 'top',       label: '上装', emoji: '👕' },
+  { key: 'bottom',    label: '下装', emoji: '👖' },
+  { key: 'shoes',     label: '鞋子', emoji: '👟' },
+  { key: 'accessory', label: '配饰', emoji: '👜' },
+];
+const CL_CAT_LABEL = { top:'上装', bottom:'下装', outer:'外套', shoes:'鞋子', accessory:'配饰' };
+
+const clState = {
+  clothes: [],
+  outfits: [],
+  outfit: { outer:null, top:null, bottom:null, shoes:null, accessory:null },
+  filterCat: 'all',
+  pendingImg: null,
+  pendingColor: '',
+  selCat: null,
+  editSlot: null,
+  pickerSel: null,
+};
+
+// ─── IndexedDB ───
+let clDB;
+function clDbInit() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('HomeBaseClosetDB', 1);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('cl_clothes')) d.createObjectStore('cl_clothes', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('cl_outfits')) d.createObjectStore('cl_outfits', { keyPath: 'id' });
+    };
+    r.onsuccess = e => { clDB = e.target.result; res(); };
+    r.onerror = rej;
+  });
+}
+function clDbAll(store) {
+  return new Promise((res, rej) => {
+    const r = clDB.transaction(store, 'readonly').objectStore(store).getAll();
+    r.onsuccess = () => res(r.result); r.onerror = rej;
+  });
+}
+function clDbPut(store, item) {
+  return new Promise((res, rej) => {
+    const r = clDB.transaction(store, 'readwrite').objectStore(store).put(item);
+    r.onsuccess = res; r.onerror = rej;
+  });
+}
+function clDbDel(store, id) {
+  return new Promise((res, rej) => {
+    const r = clDB.transaction(store, 'readwrite').objectStore(store).delete(id);
+    r.onsuccess = res; r.onerror = rej;
+  });
+}
+
+// ─── Sub-page switching ───
+function clSwitchPage(pg) {
+  document.querySelectorAll('.cl-sub-tab').forEach(b => b.classList.toggle('active', b.dataset.pg === pg));
+  document.querySelectorAll('.cl-page').forEach(p => p.classList.toggle('active', p.id === `cl-pg-${pg}`));
+  // FAB only on wardrobe page
+  document.getElementById('fab-cl-add').classList.toggle('visible', pg === 'wardrobe' && currentSection === 'closet');
+  // Update sub-title based on page
+  const sub = document.getElementById('cl-sub-title');
+  if (pg === 'wardrobe') sub.textContent = `${clState.clothes.length} 件单品`;
+  else if (pg === 'style') sub.textContent = '点击槽位选择单品';
+  else sub.textContent = `${clState.outfits.length} 套穿搭`;
+}
+
+// Category filter tabs
+document.getElementById('cl-cat-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.cl-cat-tab');
+  if (!btn) return;
+  document.querySelectorAll('.cl-cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  clState.filterCat = btn.dataset.cat;
+  clRenderWardrobe();
+});
+
+// ─── Wardrobe ───
+function clRenderWardrobe() {
+  const grid  = document.getElementById('cl-clothes-grid');
+  const empty = document.getElementById('cl-wardrobe-empty');
+  document.getElementById('cl-sub-title').textContent = `${clState.clothes.length} 件单品`;
+
+  const list = clState.filterCat === 'all'
+    ? clState.clothes
+    : clState.clothes.filter(c => c.category === clState.filterCat);
+
+  if (!list.length) {
+    grid.innerHTML = ''; empty.style.display = 'flex'; return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(c => `
+    <div class="cl-cloth-card" data-id="${c.id}">
+      <img src="${c.image}" alt="${esc(c.name)}" loading="lazy">
+      <div class="cl-cloth-info">
+        <div class="cl-cloth-name">${esc(c.name)}</div>
+        <div class="cl-cloth-meta">${CL_CAT_LABEL[c.category]||''}${c.color?' · '+esc(c.color):''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Long-press to delete
+  grid.querySelectorAll('.cl-cloth-card').forEach(card => {
+    let t;
+    const startDel = () => { t = setTimeout(() => { if(confirm('删除这件衣服？')) clDeleteCloth(card.dataset.id); }, 650); };
+    card.addEventListener('touchstart', startDel);
+    card.addEventListener('touchend',  () => clearTimeout(t));
+    card.addEventListener('touchmove', () => clearTimeout(t));
+    card.addEventListener('contextmenu', e => { e.preventDefault(); if(confirm('删除这件衣服？')) clDeleteCloth(card.dataset.id); });
+  });
+}
+
+async function clDeleteCloth(id) {
+  await clDbDel('cl_clothes', id);
+  clState.clothes = clState.clothes.filter(c => c.id !== id);
+  CL_SLOTS.forEach(sl => { if (clState.outfit[sl.key]?.id === id) clState.outfit[sl.key] = null; });
+  clRenderWardrobe();
+  clRenderStyleBoard();
+  toast('已删除');
+}
+
+// ─── Add Clothes ───
+function clOpenAddModal() {
+  clState.pendingImg = null; clState.pendingColor = ''; clState.selCat = null;
+  document.getElementById('cl-upload-prev').style.display = 'none';
+  document.getElementById('cl-upload-ph').style.display = 'block';
+  document.getElementById('cl-ai-badge').classList.remove('show');
+  document.getElementById('cl-inp-name').value = '';
+  document.getElementById('cl-file-inp').value = '';
+  document.querySelectorAll('.cl-cat-sel-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('cl-btn-save-cloth').disabled = true;
+  document.getElementById('cl-add-modal').classList.add('show');
+}
+function clCloseAddModal() { document.getElementById('cl-add-modal').classList.remove('show'); }
+
+function clPickCat(cat) {
+  clState.selCat = cat;
+  document.querySelectorAll('.cl-cat-sel-btn').forEach(b => b.classList.toggle('on', b.dataset.cat === cat));
+  document.getElementById('cl-btn-save-cloth').disabled = !(clState.pendingImg && clState.selCat);
+}
+
+async function clOnFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const compressed = await clCompressImage(file, 900, 0.82);
+  clState.pendingImg = compressed;
+  const prev = document.getElementById('cl-upload-prev');
+  prev.src = compressed; prev.style.display = 'block';
+  document.getElementById('cl-upload-ph').style.display = 'none';
+  document.getElementById('cl-btn-save-cloth').disabled = !(clState.pendingImg && clState.selCat);
+  const key = localStorage.getItem('hb_api_key');
+  if (key) clAiAnalyze(compressed, key);
+}
+
+async function clCompressImage(file, maxPx, q) {
+  return new Promise(res => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxPx || h > maxPx) {
+        if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else       { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', q));
+    };
+    img.src = url;
+  });
+}
+
+async function clAiAnalyze(base64, key) {
+  const badge = document.getElementById('cl-ai-badge');
+  badge.classList.add('show');
+  try {
+    const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: base64 } },
+            { type: 'text', text: '这是一件衣物的照片，请分析并仅返回纯JSON（无markdown格式）：{"category":"top/bottom/outer/shoes/accessory","color":"主色调中文（如：米白色）","name":"简洁中文名称8字内"}。category必须从5个值里选一个。' }
+          ]
+        }],
+        max_tokens: 80
+      })
+    });
+    const d = await r.json();
+    const txt = d.choices?.[0]?.message?.content || '';
+    const m = txt.match(/\{[^}]+\}/);
+    if (m) {
+      const info = JSON.parse(m[0]);
+      if (info.name)     document.getElementById('cl-inp-name').value = info.name;
+      if (info.category) clPickCat(info.category);
+      if (info.color)    clState.pendingColor = info.color;
+      toast('AI 识别完成 ✨');
+    }
+  } catch(err) { console.warn('AI识别失败', err); }
+  finally { badge.classList.remove('show'); }
+}
+
+async function clSaveCloth() {
+  const name = document.getElementById('cl-inp-name').value.trim() || '未命名';
+  const item = {
+    id: `c${Date.now()}`,
+    name, category: clState.selCat,
+    color: clState.pendingColor,
+    image: clState.pendingImg,
+    addedAt: Date.now()
+  };
+  await clDbPut('cl_clothes', item);
+  clState.clothes.unshift(item);
+  clCloseAddModal();
+  clRenderWardrobe();
+  toast('已加入衣橱 ✓');
+}
+
+// ─── Style Board ───
+function clRenderStyleBoard() {
+  document.getElementById('cl-style-board').innerHTML = CL_SLOTS.map(sl => {
+    const item = clState.outfit[sl.key];
+    if (item) return `
+      <div class="cl-slot" onclick="clOpenPicker('${sl.key}')">
+        <img class="cl-slot-thumb" src="${item.image}" alt="${esc(item.name)}">
+        <div class="cl-slot-info">
+          <div class="cl-slot-label">${sl.label}</div>
+          <div class="cl-slot-name">${esc(item.name)}</div>
+        </div>
+        <div class="cl-slot-rm" onclick="clRemoveSlot('${sl.key}',event)">✕</div>
+      </div>`;
+    return `
+      <div class="cl-slot" onclick="clOpenPicker('${sl.key}')">
+        <div class="cl-slot-empty">${sl.emoji}</div>
+        <div class="cl-slot-info">
+          <div class="cl-slot-label">${sl.label}</div>
+          <div class="cl-slot-hint">点击选择</div>
+        </div>
+        <div class="cl-slot-arrow">›</div>
+      </div>`;
+  }).join('');
+}
+
+function clRemoveSlot(key, e) {
+  e.stopPropagation();
+  clState.outfit[key] = null;
+  clRenderStyleBoard();
+}
+
+function clClearOutfit() {
+  CL_SLOTS.forEach(sl => clState.outfit[sl.key] = null);
+  clRenderStyleBoard();
+}
+
+// ─── Picker ───
+function clOpenPicker(slotKey) {
+  clState.editSlot = slotKey;
+  clState.pickerSel = clState.outfit[slotKey];
+  const sl = CL_SLOTS.find(s => s.key === slotKey);
+  document.getElementById('cl-picker-title').textContent = `选择${sl.label}`;
+  const items = clState.clothes.filter(c => c.category === slotKey);
+  const grid = document.getElementById('cl-picker-grid');
+  if (!items.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:28px 0;color:var(--text-3)">还没有${sl.label}<br>先去衣柜添加吧</div>`;
+  } else {
+    grid.innerHTML = items.map(c => `
+      <div class="cl-picker-item ${clState.pickerSel?.id===c.id?'on':''}" data-id="${c.id}" onclick="clTogglePick('${c.id}')">
+        <img src="${c.image}" alt="${esc(c.name)}">
+        <div class="cl-picker-name">${esc(c.name)}</div>
+        <div class="cl-picker-chk">✓</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('cl-picker-modal').classList.add('show');
+}
+
+function clTogglePick(id) {
+  const item = clState.clothes.find(c => c.id === id);
+  clState.pickerSel = (clState.pickerSel?.id === id) ? null : item;
+  document.querySelectorAll('.cl-picker-item').forEach(el => {
+    el.classList.toggle('on', el.dataset.id === id && !!clState.pickerSel);
+  });
+}
+
+function clConfirmPick() {
+  if (clState.editSlot) clState.outfit[clState.editSlot] = clState.pickerSel || null;
+  document.getElementById('cl-picker-modal').classList.remove('show');
+  clRenderStyleBoard();
+}
+
+// ─── Save Outfit ───
+function clPromptSave() {
+  if (!CL_SLOTS.some(sl => clState.outfit[sl.key])) { toast('先选择至少一件单品吧'); return; }
+  document.getElementById('cl-outfit-name').value = '';
+  document.getElementById('cl-save-modal').classList.add('show');
+  setTimeout(() => document.getElementById('cl-outfit-name').focus(), 350);
+}
+
+async function clConfirmSave() {
+  const name = document.getElementById('cl-outfit-name').value.trim() || fmtDate();
+  const outfit = {
+    id: `o${Date.now()}`,
+    name,
+    items: { ...clState.outfit },
+    savedAt: Date.now()
+  };
+  await clDbPut('cl_outfits', outfit);
+  clState.outfits.unshift(outfit);
+  document.getElementById('cl-save-modal').classList.remove('show');
+  clRenderRecords();
+  toast('穿搭已保存 ✨');
+  clSwitchPage('record');
+}
+
+// ─── Records ───
+function clRenderRecords() {
+  const list  = document.getElementById('cl-records-list');
+  const empty = document.getElementById('cl-record-empty');
+
+  if (!clState.outfits.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = clState.outfits.map(o => {
+    const items = CL_SLOTS.map(sl => o.items[sl.key]).filter(Boolean);
+    const tags  = CL_SLOTS.filter(sl => o.items[sl.key]).map(sl => sl.label).join(' · ');
+    return `
+      <div class="cl-outfit-card">
+        <div class="cl-outfit-header">
+          <div class="cl-outfit-name">${esc(o.name)}</div>
+          <div class="cl-outfit-date">${fmtDate(o.savedAt)}</div>
+        </div>
+        <div class="cl-outfit-thumbs">
+          ${items.map(c => `<img class="cl-outfit-thumb" src="${c.image}" alt="${esc(c.name)}">`).join('')}
+        </div>
+        <div class="cl-outfit-footer">
+          <div class="cl-outfit-tags-txt">${tags}</div>
+          <div class="cl-outfit-del" onclick="clDeleteOutfit('${o.id}')">删除</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function clDeleteOutfit(id) {
+  if (!confirm('删除这套穿搭记录？')) return;
+  await clDbDel('cl_outfits', id);
+  clState.outfits = clState.outfits.filter(o => o.id !== id);
+  clRenderRecords();
+  toast('已删除');
 }
 </script>
 </body>
