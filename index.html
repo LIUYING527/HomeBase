@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>HomeBase</title>
+  <meta name="theme-color" content="#5cb87a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="HomeBase">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --primary: #5cb87a;
+      --primary-light: #e8f5ed;
+      --primary-dark: #3d9e5c;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --danger: #ef4444;
+      --text: #1a1a1a;
+      --text-2: #555;
+      --text-3: #999;
+      --border: #e8e4de;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --r: 16px;
+      --r-sm: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Loading ─── */
+    #loading {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 20px; z-index: 9999;
+    }
+    .loading-icon { font-size: 56px; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Login ─── */
+    #login-screen {
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; padding: 32px;
+    }
+    .login-icon { font-size: 56px; margin-bottom: 12px; }
+    .login-title { font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+    .login-sub { font-size: 14px; color: var(--text-3); margin-bottom: 40px; }
+    .login-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: var(--shadow);
+    }
+    .field-label {
+      display: block; font-size: 12px; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px;
+    }
+    .field-input {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); font-size: 15px; color: var(--text);
+      background: var(--bg); outline: none; transition: border-color .2s;
+      font-family: inherit;
+    }
+    .field-input:focus { border-color: var(--primary); }
+    .field-group { margin-bottom: 18px; }
+    .field-group textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .field-group select { appearance: none; cursor: pointer; }
+    .err { color: var(--danger); font-size: 13px; margin-top: 6px; display: none; }
+    .btn-primary {
+      width: 100%; padding: 14px; background: var(--primary); color: white;
+      border: none; border-radius: var(--r-sm); font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity .2s; font-family: inherit;
+    }
+    .btn-primary:active { opacity: .85; }
+
+    /* ─── App ─── */
+    #app { display: none; min-height: 100vh; padding-bottom: 90px; }
+
+    /* ─── Topbar ─── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 18px 12px;
+    }
+    .topbar-row1 {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 34px; height: 34px; background: var(--primary);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text { font-size: 20px; font-weight: 800; color: var(--text); }
+    .sync-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--primary); margin-left: 6px; flex-shrink: 0;
+    }
+    .sync-dot.syncing { animation: pulse 1s infinite; background: var(--accent); }
+    .sync-dot.err { background: var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .topbar-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: none;
+      background: var(--bg); cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .icon-btn:active { background: var(--border); }
+    .search-wrap { position: relative; }
+    .search-icon {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%); font-size: 15px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 9px 14px 9px 38px;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      font-size: 14px; outline: none; background: var(--bg);
+      font-family: inherit; color: var(--text);
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    /* ─── Category Tabs ─── */
+    .cat-tabs {
+      display: flex; gap: 8px; padding: 12px 18px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      padding: 6px 16px; border-radius: 50px; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 500;
+      cursor: pointer; white-space: nowrap; transition: all .15s;
+      color: var(--text-2);
+    }
+    .cat-tab.active {
+      background: var(--primary); border-color: var(--primary); color: white;
+    }
+
+    /* ─── Items Area ─── */
+    .items-area { padding: 4px 18px 16px; }
+
+    .restock-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 10px 14px; margin-bottom: 14px;
+      background: var(--accent-light); border: 1.5px solid #f59e0b;
+      border-radius: var(--r-sm); cursor: pointer;
+    }
+    .restock-bar-text { font-size: 14px; font-weight: 600; color: #92400e; }
+    .restock-badge {
+      margin-left: auto; background: var(--accent); color: white;
+      border-radius: 50px; padding: 2px 9px; font-size: 12px; font-weight: 700;
+    }
+
+    .items-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (min-width: 540px) { .items-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .item-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 14px 14px 12px; box-shadow: var(--shadow);
+      cursor: pointer; transition: transform .15s;
+      border: 1.5px solid transparent; position: relative; overflow: hidden;
+    }
+    .item-card:active { transform: scale(.97); }
+    .item-card.needs-restock { border-color: var(--accent); }
+    .item-card-cat { font-size: 11px; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+    .item-card-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+    .item-card-brand { font-size: 12px; color: var(--text-3); margin-bottom: 8px; }
+    .item-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag-chip {
+      font-size: 11px; padding: 2px 7px;
+      background: var(--primary-light); color: var(--primary);
+      border-radius: 50px; font-weight: 600;
+    }
+    .restock-dot {
+      position: absolute; top: 11px; right: 11px;
+      width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+    }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-3);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 14px; }
+    .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text-2); }
+    .empty-sub { font-size: 13px; }
+
+    /* ─── FABs ─── */
+    .fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 56px; height: 56px; border-radius: 50%;
+      border: none; cursor: pointer; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; z-index: 200; transition: transform .2s;
+    }
+    .fab:active { transform: scale(.92); }
+    #fab-add { background: var(--primary); box-shadow: 0 4px 20px rgba(92,184,122,.4); }
+    #fab-ai {
+      bottom: 92px; right: 26px;
+      width: 48px; height: 48px; font-size: 22px;
+      background: #7c3aed; box-shadow: 0 4px 16px rgba(124,58,237,.35);
+    }
+
+    /* ─── Modal Base ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 300; display: none; align-items: flex-end;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-sheet {
+      background: var(--surface); border-radius: 22px 22px 0 0;
+      width: 100%; max-height: 92vh; overflow-y: auto;
+      padding: 6px 20px 32px; animation: slideUp .28s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .modal-handle {
+      width: 40px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 12px auto 18px;
+    }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+
+    /* ─── Tag Picker ─── */
+    .tag-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+    .tag-pill {
+      padding: 5px 13px; border-radius: 50px;
+      border: 1.5px solid var(--border); font-size: 13px;
+      cursor: pointer; color: var(--text-2); transition: all .15s;
+    }
+    .tag-pill.on { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .selected-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 10px 12px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); min-height: 44px; cursor: text;
+      margin-bottom: 8px;
+    }
+    .selected-tags:focus-within { border-color: var(--primary); }
+    .sel-tag {
+      display: flex; align-items: center; gap: 4px;
+      padding: 3px 10px; background: var(--primary-light);
+      color: var(--primary); border-radius: 50px; font-size: 13px; font-weight: 600;
+    }
+    .sel-tag-x { cursor: pointer; opacity: .6; font-size: 15px; line-height: 1; }
+    .add-tag-row { display: flex; gap: 8px; }
+    .add-tag-input {
+      flex: 1; padding: 9px 13px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 13px; outline: none; font-family: inherit;
+    }
+    .add-tag-input:focus { border-color: var(--primary); }
+    .add-tag-btn {
+      padding: 9px 14px; background: var(--primary); color: white;
+      border: none; border-radius: 8px; cursor: pointer; font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ─── Btn Row ─── */
+    .btn-row { display: flex; gap: 10px; margin-top: 22px; }
+    .btn-secondary {
+      flex: 1; padding: 13px; background: var(--bg);
+      border: 1.5px solid var(--border); border-radius: var(--r-sm);
+      font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .btn-danger {
+      padding: 13px 18px; background: #fee2e2; color: var(--danger);
+      border: none; border-radius: var(--r-sm); font-size: 15px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* ─── Detail ─── */
+    .detail-cat { font-size: 12px; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .detail-name { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+    .detail-brand { font-size: 15px; color: var(--text-3); margin-bottom: 18px; }
+    .detail-sec { margin-bottom: 16px; }
+    .detail-sec-label {
+      font-size: 11px; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px;
+    }
+    .detail-sec-body { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .detail-link { color: var(--primary); text-decoration: none; word-break: break-all; font-size: 14px; }
+    .restock-toggle {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 15px; background: var(--accent-light);
+      border-radius: var(--r-sm); margin-bottom: 18px; cursor: pointer;
+      border: 1.5px solid transparent; transition: all .15s;
+    }
+    .restock-toggle.on { border-color: var(--accent); }
+    .toggle-label { font-size: 14px; font-weight: 600; }
+    .toggle-sw {
+      width: 46px; height: 26px; background: #d1d5db;
+      border-radius: 13px; position: relative; margin-left: auto;
+      transition: background .2s; flex-shrink: 0;
+    }
+    .toggle-sw.on { background: var(--accent); }
+    .toggle-knob {
+      width: 20px; height: 20px; background: white; border-radius: 50%;
+      position: absolute; top: 3px; left: 3px; transition: transform .2s;
+    }
+    .toggle-sw.on .toggle-knob { transform: translateX(20px); }
+
+    /* ─── Settings ─── */
+    .settings-sec { margin-bottom: 24px; }
+    .settings-sec-title {
+      font-size: 11px; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+    }
+    .settings-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+    }
+    .settings-label { font-size: 15px; font-weight: 500; }
+    .settings-val { font-size: 13px; color: var(--text-3); }
+
+    /* ─── AI Chat ─── */
+    #chat-modal {
+      position: fixed; inset: 0; background: var(--surface);
+      z-index: 500; display: none; flex-direction: column;
+    }
+    #chat-modal.show { display: flex; }
+    .chat-bar {
+      background: #7c3aed; padding: 15px 18px;
+      display: flex; align-items: center; gap: 12px; color: white;
+      flex-shrink: 0;
+    }
+    .chat-bar-back {
+      background: none; border: none; color: white; cursor: pointer;
+      font-size: 24px; line-height: 1; padding: 0;
+    }
+    .chat-bar-title { font-size: 18px; font-weight: 700; flex: 1; }
+    .chat-bar-clear {
+      background: none; border: none; color: rgba(255,255,255,.7);
+      cursor: pointer; font-size: 13px; font-family: inherit;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 18px 18px 10px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .msg {
+      max-width: 86%; padding: 12px 15px;
+      border-radius: 16px; font-size: 14px; line-height: 1.55;
+    }
+    .msg.user {
+      background: #7c3aed; color: white;
+      align-self: flex-end; border-bottom-right-radius: 4px;
+    }
+    .msg.ai {
+      background: var(--bg); color: var(--text);
+      align-self: flex-start; border-bottom-left-radius: 4px;
+    }
+    .msg.thinking { font-style: italic; color: var(--text-3); }
+    .chat-input-bar {
+      padding: 14px 18px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; padding: 11px 16px;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      font-size: 15px; outline: none; font-family: inherit;
+    }
+    .chat-input:focus { border-color: #7c3aed; }
+    .chat-send {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: #7c3aed; color: white; border: none;
+      cursor: pointer; font-size: 20px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loading-icon">🏠</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-icon">🏠</div>
+  <div class="login-title">HomeBase</div>
+  <div class="login-sub">家庭好物知识库</div>
+  <div class="login-card">
+    <div class="field-group">
+      <label class="field-label">访问密码</label>
+      <input class="field-input" type="password" id="pwd-input" placeholder="输入密码">
+      <div class="err" id="pwd-err">密码错误，请重试</div>
+    </div>
+    <button class="btn-primary" onclick="login()">进入</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-row1">
+      <div class="logo">
+        <div class="logo-icon">🏠</div>
+        <span class="logo-text">HomeBase</span>
+        <span class="sync-dot" id="sync-dot"></span>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" onclick="openSettings()">⚙️</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" id="search-input" placeholder="搜索好物..." oninput="renderItems()">
+    </div>
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="cat-tabs" id="cat-tabs"></div>
+
+  <!-- Items -->
+  <div class="items-area">
+    <div class="restock-bar" id="restock-bar" onclick="toggleRestockFilter()">
+      <span>⚠️</span>
+      <span class="restock-bar-text">需要补货</span>
+      <span class="restock-badge" id="restock-count">0</span>
+    </div>
+    <div class="items-grid" id="items-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">这里还没有好物</div>
+      <div class="empty-sub">点右下角 ＋ 开始添加吧</div>
+    </div>
+  </div>
+</div>
+
+<!-- FABs -->
+<button class="fab" id="fab-add" style="display:none" onclick="openAddModal()">＋</button>
+<button class="fab" id="fab-ai" style="display:none" onclick="openChat()">✨</button>
+
+<!-- ─── Add/Edit Modal ─── -->
+<div class="modal-overlay" id="item-modal" onclick="if(event.target===this)closeItemModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="item-modal-title">添加好物</div>
+
+    <div class="field-group">
+      <label class="field-label">名称 *</label>
+      <input class="field-input" type="text" id="f-name" placeholder="如：牙膏、洗碗液">
+    </div>
+    <div class="field-group">
+      <label class="field-label">分类 *</label>
+      <select class="field-input" id="f-category">
+        <option value="洗护">🧴 洗护</option>
+        <option value="清洁">🧹 清洁</option>
+        <option value="厨房">🍳 厨房</option>
+        <option value="食品">🥫 食品</option>
+        <option value="其他">📦 其他</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">品牌 / 型号</label>
+      <input class="field-input" type="text" id="f-brand" placeholder="如：高露洁亮白">
+    </div>
+    <div class="field-group">
+      <label class="field-label">购买链接</label>
+      <input class="field-input" type="url" id="f-link" placeholder="淘宝 / 京东 / 拼多多链接">
+    </div>
+    <div class="field-group">
+      <label class="field-label">备注</label>
+      <textarea class="field-input" id="f-notes" rows="3" placeholder="为什么好用、价格参考、注意事项…"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">标签</label>
+      <div class="tag-suggestions" id="tag-suggestions"></div>
+      <div class="selected-tags" id="selected-tags-display"></div>
+      <div class="add-tag-row">
+        <input class="add-tag-input" type="text" id="new-tag-input" placeholder="自定义标签"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();addTagFromInput()}">
+        <button class="add-tag-btn" onclick="addTagFromInput()">添加</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeItemModal()">取消</button>
+      <button class="btn-primary" style="flex:1" onclick="saveItem()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Detail Modal ─── -->
+<div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ─── Settings Modal ─── -->
+<div class="modal-overlay" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">设置</div>
+
+    <div class="settings-sec">
+      <div class="settings-sec-title">AI 助手</div>
+      <div class="settings-row">
+        <span class="settings-label">DeepSeek API Key</span>
+        <span class="settings-val" id="api-key-val">未设置</span>
+      </div>
+      <div style="margin-top:12px">
+        <input class="field-input" type="password" id="api-key-input" placeholder="sk-…" style="margin-bottom:10px">
+        <button class="btn-primary" onclick="saveApiKey()">保存 Key</button>
+      </div>
+    </div>
+
+    <div class="settings-sec">
+      <div class="settings-sec-title">标签管理</div>
+      <div id="tags-manager-list"></div>
+      <div class="add-tag-row" style="margin-top:12px">
+        <input class="add-tag-input" type="text" id="global-tag-input" placeholder="新建全局标签">
+        <button class="add-tag-btn" onclick="addGlobalTag()">添加</button>
+      </div>
+    </div>
+
+    <div class="settings-sec">
+      <div class="settings-sec-title">账户</div>
+      <button class="btn-secondary" style="width:100%" onclick="logout()">退出登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AI Chat ─── -->
+<div id="chat-modal">
+  <div class="chat-bar">
+    <button class="chat-bar-back" onclick="closeChat()">←</button>
+    <span class="chat-bar-title">✨ 好物助手</span>
+    <button class="chat-bar-clear" onclick="clearChat()">清空</button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="msg ai">你好！我是 HomeBase 好物助手 ✨<br>可以帮你推荐产品、比较品牌，或者规划家庭采购，有什么想问的？</div>
+  </div>
+  <div class="chat-input-bar">
+    <input class="chat-input" type="text" id="chat-input" placeholder="问我任何关于家庭好物的问题…"
+           onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════
+// 修改 APP_PASSWORD 可更换访问密码
+const APP_PASSWORD = 'home2026';
+const SUPABASE_URL  = 'https://wzlypptsytnqfsmwxpzf.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_9rXFdTyDO2yai9uLBRJSNQ_6irPiu6E';
+const PRESET_CATS   = ['全部', '洗护', '清洁', '厨房', '食品', '其他'];
+const PRESET_TAGS   = ['日用', '高频', '囤货', '备用', '季节性'];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let sb, items = [], currentCat = '全部', editingId = null;
+let selectedTags = [], allTags = [...PRESET_TAGS], restockOnly = false;
+let chatHistory = [];
+
+// ════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Load saved tags
+  const saved = localStorage.getItem('hb_tags');
+  if (saved) {
+    try { allTags = JSON.parse(saved); } catch {}
+  }
+
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    if (localStorage.getItem('hb_auth') === '1') {
+      startApp();
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+    }
+  }, 500);
+
+  document.getElementById('pwd-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+});
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function login() {
+  const v = document.getElementById('pwd-input').value;
+  if (v === APP_PASSWORD) {
+    localStorage.setItem('hb_auth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    startApp();
+  } else {
+    document.getElementById('pwd-err').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+function logout() {
+  localStorage.removeItem('hb_auth');
+  location.reload();
+}
+
+// ════════════════════════════════════════
+// APP START
+// ════════════════════════════════════════
+async function startApp() {
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('fab-add').style.display = 'flex';
+  document.getElementById('fab-ai').style.display = 'flex';
+
+  // API key display
+  const key = localStorage.getItem('hb_api_key');
+  if (key) {
+    document.getElementById('api-key-val').textContent = key.slice(0, 8) + '…';
+    document.getElementById('api-key-input').value = key;
+  }
+
+  renderCatTabs();
+  await loadItems();
+  subscribeRealtime();
+}
+
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+async function loadItems() {
+  setSyncState('syncing');
+  try {
+    const { data, error } = await sb
+      .from('homebase_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    items = data || [];
+    setSyncState('ok');
+  } catch (e) {
+    setSyncState('err');
+    const cached = localStorage.getItem('hb_cache');
+    if (cached) { try { items = JSON.parse(cached); } catch {} }
+  }
+  renderItems();
+}
+
+function subscribeRealtime() {
+  sb.channel('hb_items')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'homebase_items' }, payload => {
+      if (payload.eventType === 'INSERT') {
+        if (!items.find(i => i.id === payload.new.id)) items.unshift(payload.new);
+      } else if (payload.eventType === 'UPDATE') {
+        const idx = items.findIndex(i => i.id === payload.new.id);
+        if (idx !== -1) items[idx] = payload.new;
+      } else if (payload.eventType === 'DELETE') {
+        items = items.filter(i => i.id !== payload.old.id);
+      }
+      renderItems();
+    })
+    .subscribe();
+}
+
+function setSyncState(s) {
+  const d = document.getElementById('sync-dot');
+  d.className = 'sync-dot' + (s === 'syncing' ? ' syncing' : s === 'err' ? ' err' : '');
+}
+
+// ════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════
+function renderCatTabs() {
+  document.getElementById('cat-tabs').innerHTML = PRESET_CATS.map(c =>
+    `<button class="cat-tab ${c === currentCat ? 'active' : ''}" onclick="setCat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function setCat(c) {
+  currentCat = c;
+  restockOnly = false;
+  renderCatTabs();
+  renderItems();
+}
+
+function toggleRestockFilter() {
+  restockOnly = !restockOnly;
+  renderItems();
+}
+
+function renderItems() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let list = items;
+
+  if (currentCat !== '全部') list = list.filter(i => i.category === currentCat);
+  if (restockOnly) list = list.filter(i => i.needs_restock);
+  if (q) list = list.filter(i =>
+    i.name.toLowerCase().includes(q) ||
+    (i.brand || '').toLowerCase().includes(q) ||
+    (i.notes || '').toLowerCase().includes(q)
+  );
+
+  // Restock bar
+  const rc = items.filter(i => i.needs_restock).length;
+  const bar = document.getElementById('restock-bar');
+  if (rc > 0 && !restockOnly) {
+    bar.style.display = 'flex';
+    document.getElementById('restock-count').textContent = rc;
+  } else { bar.style.display = 'none'; }
+
+  const grid = document.getElementById('items-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('.empty-title').textContent = q ? '没找到匹配的好物' : '这里还没有好物';
+    empty.querySelector('.empty-sub').textContent = q ? '换个关键词试试' : '点右下角 ＋ 开始添加吧';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(item => `
+      <div class="item-card ${item.needs_restock ? 'needs-restock' : ''}" onclick="openDetail('${item.id}')">
+        ${item.needs_restock ? '<div class="restock-dot"></div>' : ''}
+        <div class="item-card-cat">${item.category}</div>
+        <div class="item-card-name">${esc(item.name)}</div>
+        ${item.brand ? `<div class="item-card-brand">${esc(item.brand)}</div>` : ''}
+        ${item.tags?.length ? `<div class="item-card-tags">${item.tags.map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  localStorage.setItem('hb_cache', JSON.stringify(items));
+}
+
+// ════════════════════════════════════════
+// DETAIL
+// ════════════════════════════════════════
+function openDetail(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-cat">${item.category}</div>
+    <div class="detail-name">${esc(item.name)}</div>
+    ${item.brand ? `<div class="detail-brand">${esc(item.brand)}</div>` : '<div style="height:14px"></div>'}
+
+    <div class="restock-toggle ${item.needs_restock ? 'on' : ''}" onclick="toggleRestock('${item.id}')">
+      <span style="font-size:20px">${item.needs_restock ? '⚠️' : '✅'}</span>
+      <span class="toggle-label">${item.needs_restock ? '需要补货' : '库存充足'}</span>
+      <div class="toggle-sw ${item.needs_restock ? 'on' : ''}"><div class="toggle-knob"></div></div>
+    </div>
+
+    ${item.notes ? `<div class="detail-sec"><div class="detail-sec-label">备注</div><div class="detail-sec-body">${esc(item.notes)}</div></div>` : ''}
+    ${item.link ? `<div class="detail-sec"><div class="detail-sec-label">购买链接</div><a class="detail-link" href="${esc(item.link)}" target="_blank">${esc(item.link)}</a></div>` : ''}
+    ${item.tags?.length ? `<div class="detail-sec"><div class="detail-sec-label">标签</div><div class="item-card-tags" style="margin-top:4px">${item.tags.map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div></div>` : ''}
+    <div class="detail-sec"><div class="detail-sec-label">添加时间</div><div class="detail-sec-body">${new Date(item.created_at).toLocaleDateString('zh-CN')}</div></div>
+
+    <div class="btn-row">
+      <button class="btn-danger" onclick="deleteItem('${item.id}')">删除</button>
+      <button class="btn-secondary" onclick="closeDetailModal()">关闭</button>
+      <button class="btn-primary" style="flex:1" onclick="editItem('${item.id}')">编辑</button>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+async function toggleRestock(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const v = !item.needs_restock;
+  try {
+    const { error } = await sb.from('homebase_items')
+      .update({ needs_restock: v, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+    item.needs_restock = v;
+    renderItems();
+    openDetail(id);
+  } catch {}
+}
+
+async function deleteItem(id) {
+  if (!confirm('确定删除这件好物？')) return;
+  try {
+    const { error } = await sb.from('homebase_items').delete().eq('id', id);
+    if (error) throw error;
+    items = items.filter(i => i.id !== id);
+    renderItems();
+    closeDetailModal();
+  } catch { alert('删除失败，请重试'); }
+}
+
+function closeDetailModal() {
+  document.getElementById('detail-modal').classList.remove('show');
+}
+
+// ════════════════════════════════════════
+// ADD / EDIT
+// ════════════════════════════════════════
+function openAddModal() {
+  editingId = null;
+  selectedTags = [];
+  document.getElementById('item-modal-title').textContent = '添加好物';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-category').value = '洗护';
+  document.getElementById('f-brand').value = '';
+  document.getElementById('f-link').value = '';
+  document.getElementById('f-notes').value = '';
+  renderTagPicker();
+  document.getElementById('item-modal').classList.add('show');
+  setTimeout(() => document.getElementById('f-name').focus(), 200);
+}
+
+function editItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  closeDetailModal();
+  editingId = id;
+  selectedTags = [...(item.tags || [])];
+  document.getElementById('item-modal-title').textContent = '编辑好物';
+  document.getElementById('f-name').value = item.name;
+  document.getElementById('f-category').value = item.category;
+  document.getElementById('f-brand').value = item.brand || '';
+  document.getElementById('f-link').value = item.link || '';
+  document.getElementById('f-notes').value = item.notes || '';
+  renderTagPicker();
+  document.getElementById('item-modal').classList.add('show');
+}
+
+function renderTagPicker() {
+  document.getElementById('tag-suggestions').innerHTML = allTags.map(t =>
+    `<span class="tag-pill ${selectedTags.includes(t) ? 'on' : ''}" onclick="toggleTag('${esc(t)}')">${esc(t)}</span>`
+  ).join('');
+  document.getElementById('selected-tags-display').innerHTML = selectedTags.map(t =>
+    `<span class="sel-tag">${esc(t)}<span class="sel-tag-x" onclick="removeTag('${esc(t)}')">×</span></span>`
+  ).join('');
+}
+
+function toggleTag(t) {
+  if (selectedTags.includes(t)) selectedTags = selectedTags.filter(x => x !== t);
+  else selectedTags.push(t);
+  renderTagPicker();
+}
+
+function removeTag(t) {
+  selectedTags = selectedTags.filter(x => x !== t);
+  renderTagPicker();
+}
+
+function addTagFromInput() {
+  const inp = document.getElementById('new-tag-input');
+  const t = inp.value.trim();
+  if (!t) return;
+  if (!allTags.includes(t)) {
+    allTags.push(t);
+    localStorage.setItem('hb_tags', JSON.stringify(allTags));
+  }
+  if (!selectedTags.includes(t)) selectedTags.push(t);
+  inp.value = '';
+  renderTagPicker();
+}
+
+async function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  const payload = {
+    name,
+    category: document.getElementById('f-category').value,
+    brand: document.getElementById('f-brand').value.trim() || null,
+    link: document.getElementById('f-link').value.trim() || null,
+    notes: document.getElementById('f-notes').value.trim() || null,
+    tags: selectedTags,
+    updated_at: new Date().toISOString()
+  };
+
+  setSyncState('syncing');
+  try {
+    if (editingId) {
+      const { error } = await sb.from('homebase_items').update(payload).eq('id', editingId);
+      if (error) throw error;
+      const idx = items.findIndex(i => i.id === editingId);
+      if (idx !== -1) items[idx] = { ...items[idx], ...payload };
+    } else {
+      const { data, error } = await sb.from('homebase_items').insert([payload]).select().single();
+      if (error) throw error;
+      items.unshift(data);
+    }
+    setSyncState('ok');
+    renderItems();
+    closeItemModal();
+  } catch (e) {
+    setSyncState('err');
+    alert('保存失败，请检查网络');
+  }
+}
+
+function closeItemModal() {
+  document.getElementById('item-modal').classList.remove('show');
+}
+
+// ════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════
+function openSettings() {
+  renderTagsManager();
+  document.getElementById('settings-modal').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
+}
+
+function renderTagsManager() {
+  document.getElementById('tags-manager-list').innerHTML = allTags.map(t => `
+    <div class="settings-row">
+      <span class="settings-label">${esc(t)}</span>
+      ${PRESET_TAGS.includes(t)
+        ? '<span class="settings-val">预设</span>'
+        : `<button onclick="removeGlobalTag('${esc(t)}')" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:20px;line-height:1;padding:0">×</button>`}
+    </div>
+  `).join('');
+}
+
+function addGlobalTag() {
+  const inp = document.getElementById('global-tag-input');
+  const t = inp.value.trim();
+  if (!t || allTags.includes(t)) return;
+  allTags.push(t);
+  localStorage.setItem('hb_tags', JSON.stringify(allTags));
+  inp.value = '';
+  renderTagsManager();
+}
+
+function removeGlobalTag(t) {
+  allTags = allTags.filter(x => x !== t);
+  localStorage.setItem('hb_tags', JSON.stringify(allTags));
+  renderTagsManager();
+}
+
+function saveApiKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('hb_api_key', k);
+  document.getElementById('api-key-val').textContent = k.slice(0, 8) + '…';
+  closeSettings();
+}
+
+// ════════════════════════════════════════
+// AI CHAT
+// ════════════════════════════════════════
+function openChat() {
+  document.getElementById('chat-modal').classList.add('show');
+  setTimeout(() => document.getElementById('chat-input').focus(), 100);
+}
+
+function closeChat() {
+  document.getElementById('chat-modal').classList.remove('show');
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML =
+    '<div class="msg ai">你好！我是 HomeBase 好物助手 ✨<br>可以帮你推荐产品、比较品牌，或者规划家庭采购，有什么想问的？</div>';
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+
+  const apiKey = localStorage.getItem('hb_api_key');
+  if (!apiKey) {
+    closeChat();
+    openSettings();
+    return;
+  }
+
+  inp.value = '';
+  const box = document.getElementById('chat-messages');
+
+  box.innerHTML += `<div class="msg user">${esc(msg)}</div>`;
+  const tid = 'thinking-' + Date.now();
+  box.innerHTML += `<div class="msg ai thinking" id="${tid}">正在思考…</div>`;
+  box.scrollTop = box.scrollHeight;
+
+  chatHistory.push({ role: 'user', content: msg });
+
+  const itemList = items.slice(0, 30).map(i =>
+    `- ${i.name}${i.brand ? `（${i.brand}）` : ''} [${i.category}]${i.needs_restock ? ' ⚠️需补货' : ''}`
+  ).join('\n') || '（暂无好物）';
+
+  const system = `你是HomeBase家庭好物助手，帮助用户管理家庭耗材采购。
+当前好物清单：
+${itemList}
+你的职责：推荐性价比高的产品（优先国内电商）、比较品牌差异、提醒补货、规划家庭采购、回答日用品使用选购问题。
+回答简洁中文，不超过200字，适当使用emoji让回复更友好。`;
+
+  try {
+    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'system', content: system }, ...chatHistory],
+        max_tokens: 600,
+        stream: false
+      })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || '抱歉，回复失败了';
+    chatHistory.push({ role: 'assistant', content: reply });
+    document.getElementById(tid)?.remove();
+    box.innerHTML += `<div class="msg ai">${esc(reply)}</div>`;
+  } catch {
+    document.getElementById(tid)?.remove();
+    box.innerHTML += `<div class="msg ai">网络出错，请重试 😔</div>`;
+    chatHistory.pop();
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+// ════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
