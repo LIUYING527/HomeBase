@@ -101,6 +101,31 @@
     }
     .btn-primary:active { opacity: .85; }
 
+    /* ─── Identity screen ─── */
+    #identity-screen {
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; padding: 32px;
+    }
+    .id-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 32px 24px; width: 100%; max-width: 360px;
+      box-shadow: var(--shadow); text-align: center;
+    }
+    .id-q { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .id-hint { font-size: 13px; color: var(--text-3); margin-bottom: 28px; }
+    .id-btns { display: flex; gap: 14px; justify-content: center; }
+    .id-btn {
+      flex: 1; padding: 22px 8px; border-radius: 16px; border: 2px solid var(--border);
+      background: var(--bg); font-size: 32px; cursor: pointer;
+      transition: all .18s; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .id-btn span { font-size: 14px; font-weight: 700; color: var(--text-2); }
+    .id-btn:active { transform: scale(.96); }
+    .id-btn.me  { border-color: var(--dy-pink);  background: var(--dy-pink-light); }
+    .id-btn.ta  { border-color: #3b82f6; background: #eff6ff; }
+    .id-btn.me span  { color: var(--dy-pink-dark); }
+    .id-btn.ta span  { color: #1d4ed8; }
+
     /* ─── Main bottom nav ─── */
     .main-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -973,6 +998,24 @@
   </div>
 </div>
 
+<!-- Identity Selection -->
+<div id="identity-screen">
+  <div class="login-icon">💑</div>
+  <div class="login-title">你是谁？</div>
+  <div class="login-sub">选择身份，下次自动记住</div>
+  <div class="id-card">
+    <div class="id-hint">选完后对方看你的记录都会标成「TA」</div>
+    <div class="id-btns">
+      <button class="id-btn me" onclick="selectIdentity('我')">
+        👩 <span>我（刘莹）</span>
+      </button>
+      <button class="id-btn ta" onclick="selectIdentity('TA')">
+        👨 <span>TA（男友）</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ HOMEBASE SECTION ═══ -->
 <div id="section-homebase">
   <div class="topbar">
@@ -1263,6 +1306,14 @@
       </div>
     </div>
     <div class="settings-sec">
+      <div class="settings-sec-title">身份</div>
+      <div class="settings-row" style="margin-bottom:10px">
+        <span class="settings-label">当前身份</span>
+        <span class="settings-val" id="identity-val"></span>
+      </div>
+      <button class="btn-secondary" style="width:100%;margin-bottom:8px" onclick="switchIdentity()">切换身份</button>
+    </div>
+    <div class="settings-sec">
       <div class="settings-sec-title">账户</div>
       <button class="btn-secondary" style="width:100%" onclick="logout()">退出登录</button>
     </div>
@@ -1516,6 +1567,12 @@ const PRESET_TAGS  = ['日用', '高频', '囤货', '备用', '季节性'];
 // SHARED STATE & UTILS
 // ════════════════════════════════════════
 let currentSection = 'homebase';
+let currentIdentity = localStorage.getItem('hb_identity') || '我'; // '我' or 'TA'
+function identityOther() { return currentIdentity === '我' ? 'TA' : '我'; }
+// Convert relative label ('我'/'TA') to stored identity value
+function relToStored(rel) { return rel === '我' ? currentIdentity : identityOther(); }
+// Convert stored identity to display label for current user
+function storedToLabel(stored) { return stored === currentIdentity ? '我' : 'TA'; }
 
 function switchSection(name) {
   currentSection = name;
@@ -1570,7 +1627,12 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     document.getElementById('loading').style.display = 'none';
     if (localStorage.getItem('hb_auth') === '1') {
-      startApp();
+      if (localStorage.getItem('hb_identity')) {
+        currentIdentity = localStorage.getItem('hb_identity');
+        startApp();
+      } else {
+        document.getElementById('identity-screen').style.display = 'flex';
+      }
     } else {
       document.getElementById('login-screen').style.display = 'flex';
     }
@@ -1586,7 +1648,12 @@ function login() {
   if (v === APP_PASSWORD) {
     localStorage.setItem('hb_auth', '1');
     document.getElementById('login-screen').style.display = 'none';
-    startApp();
+    if (localStorage.getItem('hb_identity')) {
+      currentIdentity = localStorage.getItem('hb_identity');
+      startApp();
+    } else {
+      document.getElementById('identity-screen').style.display = 'flex';
+    }
   } else {
     document.getElementById('pwd-err').style.display = 'block';
     document.getElementById('pwd-input').value = '';
@@ -1594,8 +1661,16 @@ function login() {
   }
 }
 
+function selectIdentity(id) {
+  currentIdentity = id;
+  localStorage.setItem('hb_identity', id);
+  document.getElementById('identity-screen').style.display = 'none';
+  startApp();
+}
+
 function logout() {
   localStorage.removeItem('hb_auth');
+  localStorage.removeItem('hb_identity');
   location.reload();
 }
 
@@ -1627,9 +1702,8 @@ async function startApp() {
   clRenderStyleBoard();
   clRenderRecords();
 
-  // Init Diary
-  dyState.voices = (await clDbAll('dy_voices')).sort((a,b) => b.createdAt - a.createdAt);
-  dyState.fights = (await clDbAll('dy_fights')).sort((a,b) => b.createdAt - a.createdAt);
+  // Init Diary (Supabase)
+  await dyLoadAll();
   dyRenderVoices();
   dyRenderFights();
   document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
@@ -1640,10 +1714,8 @@ async function startApp() {
   await bdLoadEntries();
   bdRenderLedger();
 
-  // Init Chores
-  hwState.tasks = await clDbAll('hw_tasks');
-  hwState.logs  = (await clDbAll('hw_logs')).sort((a,b) => b.doneAt - a.doneAt);
-  if (!hwState.tasks.length) await hwInitDefaults();
+  // Init Chores (Supabase)
+  await hwLoadAll();
   hwRender();
 }
 
@@ -1878,9 +1950,20 @@ function closeItemModal() { document.getElementById('item-modal').classList.remo
 
 function openSettings() {
   renderTagsManager();
+  document.getElementById('identity-val').textContent = currentIdentity === '我' ? '👩 我（刘莹）' : '👨 TA（男友）';
   document.getElementById('settings-modal').classList.add('show');
 }
 function closeSettings() { document.getElementById('settings-modal').classList.remove('show'); }
+
+function switchIdentity() {
+  closeSettings();
+  localStorage.removeItem('hb_identity');
+  document.getElementById('identity-screen').style.display = 'flex';
+  document.getElementById('section-homebase').style.display = 'none';
+  document.getElementById('main-nav').classList.remove('visible');
+  document.getElementById('fab-add').classList.remove('visible');
+  document.getElementById('fab-ai').classList.remove('visible');
+}
 
 function renderTagsManager() {
   document.getElementById('tags-manager-list').innerHTML = allTags.map(t => `
@@ -2338,10 +2421,21 @@ const dyState = {
   fights: [],
   currentPage: 'voice',
   selectedMood: '🥰',
-  selectedVoiceWho: '我',
+  selectedVoiceWho: '我',  // relative: '我'=currentIdentity, 'TA'=other
   selectedWho: '互相的',
   madeUp: true,
 };
+
+async function dyLoadAll() {
+  try {
+    const [vRes, fRes] = await Promise.all([
+      sb.from('hb_diary_voices').select('*').order('created_at', { ascending: false }),
+      sb.from('hb_diary_fights').select('*').order('created_at', { ascending: false }),
+    ]);
+    dyState.voices = vRes.data || [];
+    dyState.fights = fRes.data || [];
+  } catch { dyState.voices = []; dyState.fights = []; }
+}
 
 function dySwitchPage(pg) {
   dyState.currentPage = pg;
@@ -2359,7 +2453,8 @@ function dyRenderVoices() {
   if (!dyState.voices.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   list.innerHTML = dyState.voices.map(v => {
-    const isMe = !v.who || v.who === '我';
+    const isMe = !v.who || v.who === currentIdentity;
+    const label       = isMe ? '我' : 'TA';
     const borderColor = isMe ? 'var(--dy-pink)' : '#3b82f6';
     const whoColor    = isMe ? 'var(--dy-pink-dark)' : '#1d4ed8';
     const whoBg       = isMe ? 'var(--dy-pink-light)' : '#eff6ff';
@@ -2367,7 +2462,7 @@ function dyRenderVoices() {
     <div class="dy-voice-card" style="border-left-color:${borderColor}">
       <div class="dy-voice-top">
         <span class="dy-voice-mood">${v.mood}</span>
-        ${v.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoBg};color:${whoColor};font-weight:700">${v.who}</span>` : ''}
+        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoBg};color:${whoColor};font-weight:700">${label}</span>
         <span class="dy-voice-date">${v.date}</span>
       </div>
       <div class="dy-voice-content">${esc(v.content)}</div>
@@ -2378,16 +2473,10 @@ function dyRenderVoices() {
 
 function dyOpenVoiceModal() {
   dyState.selectedMood = '🥰';
-  dyState.selectedVoiceWho = '我';
+  dyState.selectedVoiceWho = '我'; // relative label; stored as currentIdentity
   document.getElementById('dy-voice-inp').value = '';
   document.querySelectorAll('.dy-mood-btn').forEach(b => b.classList.toggle('on', b.dataset.mood === '🥰'));
-  document.querySelectorAll('[data-vwho]').forEach(b => {
-    const isMe = b.dataset.vwho === '我';
-    b.classList.toggle('on', isMe);
-    b.style.borderColor = isMe ? 'var(--dy-pink)' : '';
-    b.style.background  = isMe ? 'var(--dy-pink-light)' : '';
-    b.style.color       = isMe ? 'var(--dy-pink-dark)' : '';
-  });
+  dyPickVoiceWho('我');
   document.getElementById('dy-voice-modal').classList.add('show');
   setTimeout(() => document.getElementById('dy-voice-inp').focus(), 220);
 }
@@ -2417,29 +2506,36 @@ function dyPickVoiceWho(w) {
 async function dySaveVoice() {
   const content = document.getElementById('dy-voice-inp').value.trim();
   if (!content) { document.getElementById('dy-voice-inp').focus(); return; }
+  // Convert relative label to stored identity
+  const storedWho = relToStored(dyState.selectedVoiceWho);
   const entry = {
-    id: `v${Date.now()}`,
     mood: dyState.selectedMood,
-    who: dyState.selectedVoiceWho,
+    who: storedWho,
     content,
     date: new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }),
-    createdAt: Date.now()
+    created_at: Date.now()
   };
-  await clDbPut('dy_voices', entry);
-  dyState.voices.unshift(entry);
-  dyCloseVoiceModal();
-  dyRenderVoices();
-  document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
-  toast('已记下来 💕');
+  try {
+    const { data, error } = await sb.from('hb_diary_voices').insert([entry]).select().single();
+    if (error) throw error;
+    dyState.voices.unshift(data);
+    dyCloseVoiceModal();
+    dyRenderVoices();
+    document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+    toast('已记下来 💕');
+  } catch { toast('保存失败，请检查网络'); }
 }
 
 async function dyDeleteVoice(id) {
   if (!confirm('删除这条心声？')) return;
-  await clDbDel('dy_voices', id);
-  dyState.voices = dyState.voices.filter(v => v.id !== id);
-  dyRenderVoices();
-  document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
-  toast('已删除');
+  try {
+    const { error } = await sb.from('hb_diary_voices').delete().eq('id', id);
+    if (error) throw error;
+    dyState.voices = dyState.voices.filter(v => v.id !== id);
+    dyRenderVoices();
+    document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+    toast('已删除');
+  } catch { toast('删除失败'); }
 }
 
 // ─── Fight ───
@@ -2448,14 +2544,20 @@ function dyRenderFights() {
   const empty = document.getElementById('dy-fight-empty');
   if (!dyState.fights.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
-  list.innerHTML = dyState.fights.map(f => `
+  list.innerHTML = dyState.fights.map(f => {
+    // who field for fights: '我先的'/'TA先的'/'互相的'
+    // Convert stored identities back to relative labels
+    let whoDisplay = f.who;
+    if (f.who === currentIdentity + '先的') whoDisplay = '我先的';
+    else if (f.who === identityOther() + '先的') whoDisplay = 'TA先的';
+    return `
     <div class="dy-fight-card">
       <div class="dy-fight-top">
         <div class="dy-fight-meta">
-          <span class="dy-who-badge">${esc(f.who)}</span>
+          <span class="dy-who-badge">${esc(whoDisplay)}</span>
           <span class="dy-fight-date">${f.date}</span>
         </div>
-        <span class="dy-madeup-badge ${f.madeUp?'yes':'no'}">${f.madeUp?'🤝 和好了':'😶 未解决'}</span>
+        <span class="dy-madeup-badge ${f.made_up?'yes':'no'}">${f.made_up?'🤝 和好了':'😶 未解决'}</span>
       </div>
       <div class="dy-fight-row">
         <div class="dy-fight-label">起因</div>
@@ -2463,8 +2565,8 @@ function dyRenderFights() {
       </div>
       ${f.resolve ? `<div class="dy-fight-row"><div class="dy-fight-label">怎么解决的</div><div class="dy-fight-body">${esc(f.resolve)}</div></div>` : ''}
       <div class="dy-card-del" onclick="dyDeleteFight('${f.id}')">删除</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function dyOpenFightModal() {
@@ -2500,30 +2602,39 @@ function dyToggleMadeUp() {
 async function dySaveFight() {
   const cause = document.getElementById('dy-fight-cause').value.trim();
   if (!cause) { document.getElementById('dy-fight-cause').focus(); return; }
+  // Convert relative who to stored: '我先的'→currentIdentity+'先的', 'TA先的'→other+'先的'
+  let storedWho = dyState.selectedWho;
+  if (dyState.selectedWho === '我先的') storedWho = currentIdentity + '先的';
+  else if (dyState.selectedWho === 'TA先的') storedWho = identityOther() + '先的';
   const entry = {
-    id: `f${Date.now()}`,
     cause,
-    who: dyState.selectedWho,
-    resolve: document.getElementById('dy-fight-resolve').value.trim(),
-    madeUp: dyState.madeUp,
+    who: storedWho,
+    resolve: document.getElementById('dy-fight-resolve').value.trim() || null,
+    made_up: dyState.madeUp,
     date: new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }),
-    createdAt: Date.now()
+    created_at: Date.now()
   };
-  await clDbPut('dy_fights', entry);
-  dyState.fights.unshift(entry);
-  dyCloseFightModal();
-  dyRenderFights();
-  document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
-  toast('已记录');
+  try {
+    const { data, error } = await sb.from('hb_diary_fights').insert([entry]).select().single();
+    if (error) throw error;
+    dyState.fights.unshift(data);
+    dyCloseFightModal();
+    dyRenderFights();
+    document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
+    toast('已记录');
+  } catch { toast('保存失败，请检查网络'); }
 }
 
 async function dyDeleteFight(id) {
   if (!confirm('删除这条记录？')) return;
-  await clDbDel('dy_fights', id);
-  dyState.fights = dyState.fights.filter(f => f.id !== id);
-  dyRenderFights();
-  document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
-  toast('已删除');
+  try {
+    const { error } = await sb.from('hb_diary_fights').delete().eq('id', id);
+    if (error) throw error;
+    dyState.fights = dyState.fights.filter(f => f.id !== id);
+    dyRenderFights();
+    document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
+    toast('已删除');
+  } catch { toast('删除失败'); }
 }
 
 // 分发 FAB 点击到当前子页
@@ -2770,18 +2881,33 @@ const HW_DEFAULTS = [
 
 const hwState = { tasks: [], logs: [], pendingTaskId: null };
 
+async function hwLoadAll() {
+  try {
+    const [tRes, lRes] = await Promise.all([
+      sb.from('hb_chore_tasks').select('*').order('created_at', { ascending: true }),
+      sb.from('hb_chore_logs').select('*').order('done_at', { ascending: false }),
+    ]);
+    hwState.tasks = tRes.data || [];
+    hwState.logs  = lRes.data || [];
+    if (!hwState.tasks.length) await hwInitDefaults();
+  } catch { hwState.tasks = []; hwState.logs = []; }
+}
+
 async function hwInitDefaults() {
-  for (const t of HW_DEFAULTS) {
-    const item = { id: `hw${Date.now()}_${Math.random().toString(36).slice(2,6)}`, ...t, createdAt: Date.now() };
-    await clDbPut('hw_tasks', item);
-    hwState.tasks.push(item);
-    await new Promise(r => setTimeout(r, 2)); // ensure unique ts
-  }
+  const items = HW_DEFAULTS.map((t, i) => ({
+    id: `hw${Date.now()}_${i}`,
+    name: t.name, emoji: t.emoji,
+    created_at: Date.now() + i
+  }));
+  try {
+    const { data } = await sb.from('hb_chore_tasks').insert(items).select();
+    if (data) hwState.tasks = data;
+  } catch {}
 }
 
 function hwGetCounts() {
   const c = {};
-  hwState.logs.forEach(l => { c[l.taskId] = (c[l.taskId] || 0) + 1; });
+  hwState.logs.forEach(l => { c[l.task_id] = (c[l.task_id] || 0) + 1; });
   return c;
 }
 
@@ -2825,7 +2951,7 @@ function hwLog(taskId) {
 }
 function hwCloseWhoModal() { document.getElementById('hw-who-modal').classList.remove('show'); }
 
-async function hwConfirmWho(who) {
+async function hwConfirmWho(relWho) {
   document.getElementById('hw-who-modal').classList.remove('show');
   const taskId = hwState.pendingTaskId;
   hwState.pendingTaskId = null;
@@ -2835,11 +2961,16 @@ async function hwConfirmWho(who) {
   const btn = document.getElementById(`hwb-${taskId}`);
   if (btn) { btn.classList.add('popping'); btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true }); }
 
-  const entry = { id: `l${Date.now()}`, taskId, taskName: task.name, taskEmoji: task.emoji, who, doneAt: Date.now() };
-  await clDbPut('hw_logs', entry);
-  hwState.logs.unshift(entry);
-  hwRender();
-  toast(`${task.emoji} ${task.name} · ${who} ✓`);
+  // Convert relative label to stored identity value
+  const storedWho = relToStored(relWho);
+  const entry = { task_id: taskId, task_name: task.name, task_emoji: task.emoji, who: storedWho, done_at: Date.now() };
+  try {
+    const { data, error } = await sb.from('hb_chore_logs').insert([entry]).select().single();
+    if (error) throw error;
+    hwState.logs.unshift(data);
+    hwRender();
+    toast(`${task.emoji} ${task.name} · ${relWho} ✓`);
+  } catch { toast('记录失败，请检查网络'); }
 }
 
 function hwContextMenu(e, id) {
@@ -2851,14 +2982,14 @@ async function hwAskDelete(id) {
   const task = hwState.tasks.find(t => t.id === id);
   if (!task) return;
   if (!confirm(`删除「${task.name}」及所有记录？`)) return;
-  await clDbDel('hw_tasks', id);
-  // delete associated logs
-  const logsToDelete = hwState.logs.filter(l => l.taskId === id);
-  for (const l of logsToDelete) await clDbDel('hw_logs', l.id);
-  hwState.tasks  = hwState.tasks.filter(t => t.id !== id);
-  hwState.logs   = hwState.logs.filter(l => l.taskId !== id);
-  hwRender();
-  toast('已删除');
+  try {
+    await sb.from('hb_chore_logs').delete().eq('task_id', id);
+    await sb.from('hb_chore_tasks').delete().eq('id', id);
+    hwState.tasks = hwState.tasks.filter(t => t.id !== id);
+    hwState.logs  = hwState.logs.filter(l => l.task_id !== id);
+    hwRender();
+    toast('已删除');
+  } catch { toast('删除失败'); }
 }
 
 function hwOpenAddModal() {
@@ -2873,12 +3004,15 @@ async function hwSaveTask() {
   const name  = document.getElementById('hw-inp-name').value.trim();
   if (!name) { document.getElementById('hw-inp-name').focus(); return; }
   const emoji = document.getElementById('hw-inp-emoji').value.trim() || '✅';
-  const item  = { id: `hw${Date.now()}`, name, emoji, createdAt: Date.now() };
-  await clDbPut('hw_tasks', item);
-  hwState.tasks.push(item);
-  hwCloseAddModal();
-  hwRender();
-  toast(`${emoji} 已添加`);
+  const item  = { id: `hw${Date.now()}`, name, emoji, created_at: Date.now() };
+  try {
+    const { data, error } = await sb.from('hb_chore_tasks').insert([item]).select().single();
+    if (error) throw error;
+    hwState.tasks.push(data);
+    hwCloseAddModal();
+    hwRender();
+    toast(`${emoji} 已添加`);
+  } catch { toast('添加失败，请检查网络'); }
 }
 
 function hwShowHistory() {
@@ -2887,13 +3021,15 @@ function hwShowHistory() {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">还没有记录</div>';
   } else {
     list.innerHTML = hwState.logs.slice(0, 100).map(l => {
-      const d = new Date(l.doneAt);
+      const d = new Date(l.done_at);
       const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      const whoColor = l.who === 'TA' ? '#3b82f6' : '#db2777';
+      const isMe = l.who === currentIdentity;
+      const label = isMe ? '我' : 'TA';
+      const whoColor = isMe ? '#db2777' : '#3b82f6';
       return `<div class="hw-log-item">
-        <span class="hw-log-emoji">${l.taskEmoji || '✅'}</span>
-        <span class="hw-log-name">${esc(l.taskName)}</span>
-        ${l.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoColor}20;color:${whoColor};font-weight:700">${l.who}</span>` : ''}
+        <span class="hw-log-emoji">${l.task_emoji || '✅'}</span>
+        <span class="hw-log-name">${esc(l.task_name)}</span>
+        ${l.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoColor}20;color:${whoColor};font-weight:700">${label}</span>` : ''}
         <span class="hw-log-time">${time}</span>
       </div>`;
     }).join('');
