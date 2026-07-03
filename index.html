@@ -31,6 +31,9 @@
       /* Closet accent */
       --cl-rose: #E8B4B8;
       --cl-rose-dark: #C0737A;
+      /* Chores accent */
+      --hw-teal: #2dd4bf;
+      --hw-teal-dark: #0f766e;
       /* Diary accent */
       --dy-pink: #f472b6;
       --dy-pink-dark: #db2777;
@@ -116,7 +119,8 @@
     .main-nav-item .nav-ico { font-size: 22px; line-height: 1; }
     .main-nav-item[data-sec="homebase"].active { color: var(--primary); }
     .main-nav-item[data-sec="closet"].active { color: var(--cl-rose-dark); }
-    .main-nav-item[data-sec="diary"].active  { color: var(--dy-pink-dark); }
+    .main-nav-item[data-sec="diary"].active   { color: var(--dy-pink-dark); }
+    .main-nav-item[data-sec="chores"].active { color: var(--hw-teal-dark); }
 
     /* ─── FABs ─── */
     .fab {
@@ -145,6 +149,11 @@
       bottom: calc(var(--nav-h) + 20px); right: 24px;
       width: 56px; height: 56px;
       background: var(--dy-pink-dark); box-shadow: 0 4px 20px rgba(219,39,119,.35);
+    }
+    #fab-hw-add {
+      bottom: calc(var(--nav-h) + 20px); right: 24px;
+      width: 56px; height: 56px;
+      background: var(--hw-teal-dark); box-shadow: 0 4px 20px rgba(15,118,110,.35);
     }
 
     /* ═══════════════════════════════
@@ -655,6 +664,66 @@
     .toast.show { opacity: 1; }
 
     /* ═══════════════════════════════
+       CHORES SECTION
+    ═══════════════════════════════ */
+    #section-chores {
+      display: none; min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 100px);
+    }
+    .hw-header {
+      padding: 48px 18px 16px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .hw-title { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+    .hw-subtitle { font-size: 13px; color: var(--text-3); margin-top: 3px; }
+
+    .hw-bubbles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px; padding: 0 18px 20px;
+      justify-items: center;
+    }
+    .hw-bubble {
+      width: 100px; height: 100px; border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; border: none; font-family: inherit;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+      transition: transform .15s; position: relative;
+      gap: 0; padding: 0; user-select: none;
+    }
+    .hw-bubble:active { transform: scale(.91); }
+    @keyframes hwPop {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(.87); }
+      65%  { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .hw-bubble.popping { animation: hwPop .32s ease; }
+    .hw-bubble-emoji { font-size: 30px; line-height: 1; }
+    .hw-bubble-name  { font-size: 12px; font-weight: 700; margin-top: 3px; }
+    .hw-bubble-count { font-size: 11px; font-weight: 600; margin-top: 1px; opacity: .75; }
+    .hw-count-badge {
+      position: absolute; top: 4px; right: 6px;
+      min-width: 20px; height: 20px;
+      border-radius: 10px; background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.95); font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px;
+    }
+
+    /* History log modal */
+    .hw-log-list { max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .hw-log-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .hw-log-item:last-child { border-bottom: none; }
+    .hw-log-emoji { font-size: 22px; flex-shrink: 0; }
+    .hw-log-name  { font-size: 14px; font-weight: 600; }
+    .hw-log-time  { font-size: 12px; color: var(--text-3); margin-left: auto; flex-shrink: 0; }
+
+    /* ═══════════════════════════════
        DIARY SECTION
     ═══════════════════════════════ */
     #section-diary {
@@ -868,6 +937,18 @@
   </div>
 </div>
 
+<!-- ═══ CHORES SECTION ═══ -->
+<div id="section-chores">
+  <div class="hw-header">
+    <div>
+      <div class="hw-title">家务</div>
+      <div class="hw-subtitle" id="hw-subtitle">点泡泡记录一次</div>
+    </div>
+    <button class="icon-btn" onclick="hwShowHistory()" style="margin-top:48px">📋</button>
+  </div>
+  <div class="hw-bubbles-grid" id="hw-bubbles-grid"></div>
+</div>
+
 <!-- ═══ DIARY SECTION ═══ -->
 <div id="section-diary">
   <div class="dy-header">
@@ -909,6 +990,9 @@
   <div class="main-nav-item" data-sec="diary" onclick="switchSection('diary')">
     <span class="nav-ico">💕</span><span>心情</span>
   </div>
+  <div class="main-nav-item" data-sec="chores" onclick="switchSection('chores')">
+    <span class="nav-ico">🧹</span><span>家务</span>
+  </div>
 </nav>
 
 <!-- FABs -->
@@ -916,6 +1000,7 @@
 <button class="fab" id="fab-ai" onclick="openChat()">✨</button>
 <button class="fab" id="fab-cl-add" onclick="clOpenAddModal()">＋</button>
 <button class="fab" id="fab-dy-add" onclick="dyOpenAddModal()">＋</button>
+<button class="fab" id="fab-hw-add" onclick="hwOpenAddModal()">＋</button>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1073,6 +1158,35 @@
   </div>
 </div>
 
+<!-- ─── Chores: Add Task Modal ─── -->
+<div class="modal-overlay" id="hw-add-modal" onclick="if(event.target===this)hwCloseAddModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">添加家务</div>
+    <div class="field-group">
+      <label class="field-label">图标 Emoji</label>
+      <input class="field-input" type="text" id="hw-inp-emoji" maxlength="2" placeholder="🧹" style="width:80px;text-align:center;font-size:24px">
+    </div>
+    <div class="field-group">
+      <label class="field-label">名称 *</label>
+      <input class="field-input" type="text" id="hw-inp-name" placeholder="如：扫地、倒垃圾">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="hwCloseAddModal()">取消</button>
+      <button class="btn-primary" style="flex:1;background:var(--hw-teal-dark)" onclick="hwSaveTask()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Chores: History Modal ─── -->
+<div class="modal-overlay" id="hw-history-modal" onclick="if(event.target===this)hwCloseHistory()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">记录时间线</div>
+    <div class="hw-log-list" id="hw-log-list"></div>
+  </div>
+</div>
+
 <!-- ─── Diary: Add Voice Modal ─── -->
 <div class="modal-overlay" id="dy-voice-modal" onclick="if(event.target===this)dyCloseVoiceModal()">
   <div class="modal-sheet">
@@ -1167,7 +1281,8 @@ function switchSection(name) {
   currentSection = name;
   document.getElementById('section-homebase').style.display = name === 'homebase' ? 'block' : 'none';
   document.getElementById('section-closet').style.display = name === 'closet' ? 'flex' : 'none';
-  document.getElementById('section-diary').style.display = name === 'diary' ? 'flex' : 'none';
+  document.getElementById('section-diary').style.display  = name === 'diary'   ? 'flex'  : 'none';
+  document.getElementById('section-chores').style.display = name === 'chores' ? 'block' : 'none';
 
   document.querySelectorAll('.main-nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.sec === name);
@@ -1179,6 +1294,7 @@ function switchSection(name) {
   const clPage = document.querySelector('.cl-sub-tab.active')?.dataset.pg;
   document.getElementById('fab-cl-add').classList.toggle('visible', name === 'closet' && clPage === 'wardrobe');
   document.getElementById('fab-dy-add').classList.toggle('visible', name === 'diary');
+  document.getElementById('fab-hw-add').classList.toggle('visible', name === 'chores');
 
   if (name === 'diary') {
     const pg = dyState.currentPage;
@@ -1275,6 +1391,12 @@ async function startApp() {
   dyRenderVoices();
   dyRenderFights();
   document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+
+  // Init Chores
+  hwState.tasks = await clDbAll('hw_tasks');
+  hwState.logs  = (await clDbAll('hw_logs')).sort((a,b) => b.doneAt - a.doneAt);
+  if (!hwState.tasks.length) await hwInitDefaults();
+  hwRender();
 }
 
 // ════════════════════════════════════════
@@ -1625,13 +1747,15 @@ const clState = {
 let clDB;
 function clDbInit() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open('HomeBaseClosetDB', 2);
+    const r = indexedDB.open('HomeBaseClosetDB', 3);
     r.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains('cl_clothes')) d.createObjectStore('cl_clothes', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('cl_outfits')) d.createObjectStore('cl_outfits', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('dy_voices'))  d.createObjectStore('dy_voices',  { keyPath: 'id' });
       if (!d.objectStoreNames.contains('dy_fights'))  d.createObjectStore('dy_fights',  { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('hw_tasks'))   d.createObjectStore('hw_tasks',   { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('hw_logs'))    d.createObjectStore('hw_logs',    { keyPath: 'id' });
     };
     r.onsuccess = e => { clDB = e.target.result; res(); };
     r.onerror = rej;
@@ -2127,6 +2251,146 @@ function dyOpenAddModal() {
   if (dyState.currentPage === 'voice') dyOpenVoiceModal();
   else dyOpenFightModal();
 }
+
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+// CHORES
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+const HW_COLORS = [
+  ['#dbeafe','#1e40af'],['#dcfce7','#15803d'],['#fce7f3','#be185d'],
+  ['#fef9c3','#a16207'],['#ede9fe','#6d28d9'],['#ffedd5','#c2410c'],
+  ['#cffafe','#0e7490'],['#f0fdf4','#166534'],
+];
+const HW_DEFAULTS = [
+  { name:'扫地',   emoji:'🧹' },
+  { name:'拖地',   emoji:'🌊' },
+  { name:'洗衣服', emoji:'🧺' },
+  { name:'晾衣服', emoji:'👕' },
+  { name:'换被子', emoji:'🛏️' },
+  { name:'倒垃圾', emoji:'🗑️' },
+];
+
+const hwState = { tasks: [], logs: [] };
+
+async function hwInitDefaults() {
+  for (const t of HW_DEFAULTS) {
+    const item = { id: `hw${Date.now()}_${Math.random().toString(36).slice(2,6)}`, ...t, createdAt: Date.now() };
+    await clDbPut('hw_tasks', item);
+    hwState.tasks.push(item);
+    await new Promise(r => setTimeout(r, 2)); // ensure unique ts
+  }
+}
+
+function hwGetCounts() {
+  const c = {};
+  hwState.logs.forEach(l => { c[l.taskId] = (c[l.taskId] || 0) + 1; });
+  return c;
+}
+
+function hwRender() {
+  const grid = document.getElementById('hw-bubbles-grid');
+  const counts = hwGetCounts();
+  const totalLogs = hwState.logs.length;
+  document.getElementById('hw-subtitle').textContent =
+    totalLogs ? `共完成 ${totalLogs} 次家务` : '点泡泡记录一次';
+
+  grid.innerHTML = hwState.tasks.map((t, i) => {
+    const [bg, text] = HW_COLORS[i % HW_COLORS.length];
+    const cnt = counts[t.id] || 0;
+    return `
+      <button class="hw-bubble" id="hwb-${t.id}"
+        style="background:${bg};color:${text}"
+        onclick="hwLog('${t.id}')"
+        oncontextmenu="hwContextMenu(event,'${t.id}')">
+        ${cnt > 0 ? `<div class="hw-count-badge">${cnt}</div>` : ''}
+        <span class="hw-bubble-emoji">${t.emoji}</span>
+        <span class="hw-bubble-name">${esc(t.name)}</span>
+      </button>`;
+  }).join('');
+
+  // Long-press delete on mobile
+  grid.querySelectorAll('.hw-bubble').forEach(btn => {
+    let t;
+    const id = btn.id.replace('hwb-','');
+    btn.addEventListener('touchstart', () => { t = setTimeout(() => hwAskDelete(id), 650); }, { passive: true });
+    btn.addEventListener('touchend',  () => clearTimeout(t));
+    btn.addEventListener('touchmove', () => clearTimeout(t));
+  });
+}
+
+async function hwLog(taskId) {
+  const task = hwState.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  // Pop animation
+  const btn = document.getElementById(`hwb-${taskId}`);
+  if (btn) { btn.classList.add('popping'); btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true }); }
+
+  const entry = { id: `l${Date.now()}`, taskId, taskName: task.name, taskEmoji: task.emoji, doneAt: Date.now() };
+  await clDbPut('hw_logs', entry);
+  hwState.logs.unshift(entry);
+  hwRender();
+  toast(`${task.emoji} ${task.name} ✓`);
+}
+
+function hwContextMenu(e, id) {
+  e.preventDefault();
+  hwAskDelete(id);
+}
+
+async function hwAskDelete(id) {
+  const task = hwState.tasks.find(t => t.id === id);
+  if (!task) return;
+  if (!confirm(`删除「${task.name}」及所有记录？`)) return;
+  await clDbDel('hw_tasks', id);
+  // delete associated logs
+  const logsToDelete = hwState.logs.filter(l => l.taskId === id);
+  for (const l of logsToDelete) await clDbDel('hw_logs', l.id);
+  hwState.tasks  = hwState.tasks.filter(t => t.id !== id);
+  hwState.logs   = hwState.logs.filter(l => l.taskId !== id);
+  hwRender();
+  toast('已删除');
+}
+
+function hwOpenAddModal() {
+  document.getElementById('hw-inp-emoji').value = '';
+  document.getElementById('hw-inp-name').value  = '';
+  document.getElementById('hw-add-modal').classList.add('show');
+  setTimeout(() => document.getElementById('hw-inp-name').focus(), 220);
+}
+function hwCloseAddModal() { document.getElementById('hw-add-modal').classList.remove('show'); }
+
+async function hwSaveTask() {
+  const name  = document.getElementById('hw-inp-name').value.trim();
+  if (!name) { document.getElementById('hw-inp-name').focus(); return; }
+  const emoji = document.getElementById('hw-inp-emoji').value.trim() || '✅';
+  const item  = { id: `hw${Date.now()}`, name, emoji, createdAt: Date.now() };
+  await clDbPut('hw_tasks', item);
+  hwState.tasks.push(item);
+  hwCloseAddModal();
+  hwRender();
+  toast(`${emoji} 已添加`);
+}
+
+function hwShowHistory() {
+  const list = document.getElementById('hw-log-list');
+  if (!hwState.logs.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">还没有记录</div>';
+  } else {
+    list.innerHTML = hwState.logs.slice(0, 100).map(l => {
+      const d = new Date(l.doneAt);
+      const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      return `<div class="hw-log-item">
+        <span class="hw-log-emoji">${l.taskEmoji || '✅'}</span>
+        <span class="hw-log-name">${esc(l.taskName)}</span>
+        <span class="hw-log-time">${time}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('hw-history-modal').classList.add('show');
+}
+function hwCloseHistory() { document.getElementById('hw-history-modal').classList.remove('show'); }
 </script>
 </body>
 </html>
