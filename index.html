@@ -31,6 +31,12 @@
       /* Closet accent */
       --cl-rose: #E8B4B8;
       --cl-rose-dark: #C0737A;
+      /* Diary accent */
+      --dy-pink: #f472b6;
+      --dy-pink-dark: #db2777;
+      --dy-pink-light: #fce7f3;
+      --dy-orange: #fb923c;
+      --dy-orange-light: #fff7ed;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
@@ -110,6 +116,7 @@
     .main-nav-item .nav-ico { font-size: 22px; line-height: 1; }
     .main-nav-item[data-sec="homebase"].active { color: var(--primary); }
     .main-nav-item[data-sec="closet"].active { color: var(--cl-rose-dark); }
+    .main-nav-item[data-sec="diary"].active  { color: var(--dy-pink-dark); }
 
     /* ─── FABs ─── */
     .fab {
@@ -133,6 +140,11 @@
       bottom: calc(var(--nav-h) + 20px); right: 24px;
       width: 56px; height: 56px;
       background: #2E2E2E; box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    #fab-dy-add {
+      bottom: calc(var(--nav-h) + 20px); right: 24px;
+      width: 56px; height: 56px;
+      background: var(--dy-pink-dark); box-shadow: 0 4px 20px rgba(219,39,119,.35);
     }
 
     /* ═══════════════════════════════
@@ -641,6 +653,112 @@
       opacity: 0; transition: opacity .2s; white-space: nowrap;
     }
     .toast.show { opacity: 1; }
+
+    /* ═══════════════════════════════
+       DIARY SECTION
+    ═══════════════════════════════ */
+    #section-diary {
+      display: none;
+      flex-direction: column;
+      height: calc(100vh - var(--nav-h));
+      height: calc(100dvh - var(--nav-h));
+      overflow: hidden;
+    }
+    .dy-header {
+      background: var(--bg);
+      padding: 48px 18px 0;
+      flex-shrink: 0;
+    }
+    .dy-title { font-size: 28px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 3px; }
+    .dy-sub-title { font-size: 13px; color: var(--text-3); margin-bottom: 14px; }
+
+    .dy-sub-tab {
+      flex: 1; padding: 8px 0; border-radius: 10px;
+      font-size: 14px; font-weight: 600; text-align: center;
+      cursor: pointer; border: none;
+      background: transparent; color: var(--text-3);
+      transition: all .2s; font-family: inherit;
+    }
+    .dy-sub-tab.active {
+      background: var(--surface); color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .dy-page {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: none; flex-direction: column;
+      padding-bottom: calc(var(--nav-h) + 20px);
+    }
+    .dy-page.active { display: flex; }
+
+    .dy-entries-list { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Voice card */
+    .dy-voice-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 15px; box-shadow: var(--shadow);
+      border-left: 4px solid var(--dy-pink);
+    }
+    .dy-voice-top {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 9px;
+    }
+    .dy-voice-mood { font-size: 26px; line-height: 1; flex-shrink: 0; }
+    .dy-voice-date { font-size: 12px; color: var(--text-3); margin-left: auto; }
+    .dy-voice-content { font-size: 14px; line-height: 1.68; color: var(--text); white-space: pre-wrap; }
+    .dy-card-del { font-size: 12px; color: var(--text-3); cursor: pointer; margin-top: 10px; text-align: right; }
+
+    /* Fight card */
+    .dy-fight-card {
+      background: var(--surface); border-radius: var(--r);
+      padding: 15px; box-shadow: var(--shadow);
+      border-left: 4px solid var(--dy-orange);
+    }
+    .dy-fight-top {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    .dy-fight-meta { display: flex; align-items: center; gap: 7px; }
+    .dy-who-badge {
+      font-size: 11px; padding: 3px 9px; border-radius: 20px;
+      background: var(--dy-orange-light); color: #c2410c; font-weight: 700;
+    }
+    .dy-fight-date { font-size: 12px; color: var(--text-3); }
+    .dy-madeup-badge {
+      font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700;
+    }
+    .dy-madeup-badge.yes { background: #dcfce7; color: #15803d; }
+    .dy-madeup-badge.no  { background: #fee2e2; color: #b91c1c; }
+    .dy-fight-row { margin-bottom: 8px; }
+    .dy-fight-label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+    .dy-fight-body { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+
+    /* Mood picker */
+    .dy-mood-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .dy-mood-btn {
+      font-size: 26px; border: 2.5px solid transparent; border-radius: 12px;
+      padding: 5px 8px; cursor: pointer; background: var(--bg);
+      transition: all .15s; line-height: 1; font-family: inherit;
+    }
+    .dy-mood-btn.on { border-color: var(--dy-pink); background: var(--dy-pink-light); }
+
+    /* Who started */
+    .dy-who-row { display: flex; gap: 8px; }
+    .dy-who-btn {
+      flex: 1; padding: 10px 6px; border-radius: 10px; text-align: center;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
+      transition: all .2s;
+    }
+    .dy-who-btn.on { background: var(--dy-orange-light); border-color: var(--dy-orange); color: #c2410c; font-weight: 700; }
+
+    /* Made-up toggle */
+    .dy-madeup-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: var(--r-sm); cursor: pointer;
+      border: 1.5px solid transparent; transition: all .15s;
+    }
+    .dy-madeup-row.yes { background: #f0fdf4; border-color: #86efac; }
+    .dy-madeup-row.no  { background: #fff1f2; border-color: #fca5a5; }
   </style>
 </head>
 <body>
@@ -750,6 +868,36 @@
   </div>
 </div>
 
+<!-- ═══ DIARY SECTION ═══ -->
+<div id="section-diary">
+  <div class="dy-header">
+    <div class="dy-title">心情</div>
+    <div class="dy-sub-title" id="dy-sub-title">记录每一天</div>
+    <div class="cl-sub-tabs">
+      <button class="dy-sub-tab active" data-pg="voice" onclick="dySwitchPage('voice')">心声</button>
+      <button class="dy-sub-tab" data-pg="fight" onclick="dySwitchPage('fight')">吵架本</button>
+    </div>
+  </div>
+
+  <!-- Voice page -->
+  <div class="dy-page active" id="dy-pg-voice">
+    <div class="dy-entries-list" id="dy-voices-list"></div>
+    <div class="cl-empty" id="dy-voice-empty" style="display:none">
+      <div class="cl-empty-ico">💭</div>
+      <div class="cl-empty-txt">还没有心声<br>点右下角 + 说说今天的心情</div>
+    </div>
+  </div>
+
+  <!-- Fight page -->
+  <div class="dy-page" id="dy-pg-fight">
+    <div class="dy-entries-list" id="dy-fights-list"></div>
+    <div class="cl-empty" id="dy-fight-empty" style="display:none">
+      <div class="cl-empty-ico">🕊️</div>
+      <div class="cl-empty-txt">吵架本是空的～<br>感情顺顺的最好啦</div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MAIN NAV ═══ -->
 <nav class="main-nav" id="main-nav">
   <div class="main-nav-item active" data-sec="homebase" onclick="switchSection('homebase')">
@@ -758,12 +906,16 @@
   <div class="main-nav-item" data-sec="closet" onclick="switchSection('closet')">
     <span class="nav-ico">👗</span><span>衣橱</span>
   </div>
+  <div class="main-nav-item" data-sec="diary" onclick="switchSection('diary')">
+    <span class="nav-ico">💕</span><span>心情</span>
+  </div>
 </nav>
 
 <!-- FABs -->
 <button class="fab" id="fab-add" onclick="openAddModal()">＋</button>
 <button class="fab" id="fab-ai" onclick="openChat()">✨</button>
 <button class="fab" id="fab-cl-add" onclick="clOpenAddModal()">＋</button>
+<button class="fab" id="fab-dy-add" onclick="dyOpenAddModal()">＋</button>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -921,6 +1073,71 @@
   </div>
 </div>
 
+<!-- ─── Diary: Add Voice Modal ─── -->
+<div class="modal-overlay" id="dy-voice-modal" onclick="if(event.target===this)dyCloseVoiceModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">今天想说</div>
+    <div class="field-group">
+      <label class="field-label">心情</label>
+      <div class="dy-mood-picker" id="dy-mood-picker">
+        <button class="dy-mood-btn on" data-mood="🥰" onclick="dyPickMood('🥰')">🥰</button>
+        <button class="dy-mood-btn" data-mood="😊" onclick="dyPickMood('😊')">😊</button>
+        <button class="dy-mood-btn" data-mood="😴" onclick="dyPickMood('😴')">😴</button>
+        <button class="dy-mood-btn" data-mood="🥺" onclick="dyPickMood('🥺')">🥺</button>
+        <button class="dy-mood-btn" data-mood="😔" onclick="dyPickMood('😔')">😔</button>
+        <button class="dy-mood-btn" data-mood="😤" onclick="dyPickMood('😤')">😤</button>
+        <button class="dy-mood-btn" data-mood="😂" onclick="dyPickMood('😂')">😂</button>
+        <button class="dy-mood-btn" data-mood="🫠" onclick="dyPickMood('🫠')">🫠</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">说说今天 *</label>
+      <textarea class="field-input" id="dy-voice-inp" rows="5" placeholder="今天发生了什么，心里有什么话…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="dyCloseVoiceModal()">取消</button>
+      <button class="btn-primary" style="flex:1;background:var(--dy-pink-dark)" onclick="dySaveVoice()">记下来</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Diary: Add Fight Modal ─── -->
+<div class="modal-overlay" id="dy-fight-modal" onclick="if(event.target===this)dyCloseFightModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">记录一次争吵</div>
+    <div class="field-group">
+      <label class="field-label">起因 *</label>
+      <textarea class="field-input" id="dy-fight-cause" rows="3" placeholder="从什么开始的…"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">谁先开始的</label>
+      <div class="dy-who-row">
+        <button class="dy-who-btn" data-who="我先的" onclick="dyPickWho('我先的')">我先的</button>
+        <button class="dy-who-btn on" data-who="互相的" onclick="dyPickWho('互相的')">互相的</button>
+        <button class="dy-who-btn" data-who="TA先的" onclick="dyPickWho('TA先的')">TA先的</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">怎么解决的</label>
+      <textarea class="field-input" id="dy-fight-resolve" rows="2" placeholder="后来怎么了…（可以不填）"></textarea>
+    </div>
+    <div class="field-group" style="margin-bottom:4px">
+      <label class="field-label" style="margin-bottom:8px;display:block">和好了吗</label>
+      <div class="dy-madeup-row yes" id="dy-madeup-row" onclick="dyToggleMadeUp()">
+        <span style="font-size:20px" id="dy-madeup-emoji">🤝</span>
+        <span style="font-size:14px;font-weight:600" id="dy-madeup-label">和好啦</span>
+        <div class="toggle-sw on" id="dy-madeup-sw" style="margin-left:auto"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="dyCloseFightModal()">取消</button>
+      <button class="btn-primary" style="flex:1;background:#ea580c" onclick="dySaveFight()">记录</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Closet: Save Outfit Modal ─── -->
 <div class="modal-overlay" id="cl-save-modal" onclick="if(event.target===this)document.getElementById('cl-save-modal').classList.remove('show')">
   <div class="modal-sheet">
@@ -949,8 +1166,8 @@ let currentSection = 'homebase';
 function switchSection(name) {
   currentSection = name;
   document.getElementById('section-homebase').style.display = name === 'homebase' ? 'block' : 'none';
-  const cl = document.getElementById('section-closet');
-  cl.style.display = name === 'closet' ? 'flex' : 'none';
+  document.getElementById('section-closet').style.display = name === 'closet' ? 'flex' : 'none';
+  document.getElementById('section-diary').style.display = name === 'diary' ? 'flex' : 'none';
 
   document.querySelectorAll('.main-nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.sec === name);
@@ -961,6 +1178,13 @@ function switchSection(name) {
   document.getElementById('fab-ai').classList.toggle('visible', name === 'homebase');
   const clPage = document.querySelector('.cl-sub-tab.active')?.dataset.pg;
   document.getElementById('fab-cl-add').classList.toggle('visible', name === 'closet' && clPage === 'wardrobe');
+  document.getElementById('fab-dy-add').classList.toggle('visible', name === 'diary');
+
+  if (name === 'diary') {
+    const pg = dyState.currentPage;
+    document.getElementById('dy-sub-title').textContent =
+      pg === 'voice' ? `${dyState.voices.length} 条心声` : `${dyState.fights.length} 条记录`;
+  }
 }
 
 let toastT;
@@ -1044,6 +1268,13 @@ async function startApp() {
   clRenderWardrobe();
   clRenderStyleBoard();
   clRenderRecords();
+
+  // Init Diary
+  dyState.voices = (await clDbAll('dy_voices')).sort((a,b) => b.createdAt - a.createdAt);
+  dyState.fights = (await clDbAll('dy_fights')).sort((a,b) => b.createdAt - a.createdAt);
+  dyRenderVoices();
+  dyRenderFights();
+  document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
 }
 
 // ════════════════════════════════════════
@@ -1394,11 +1625,13 @@ const clState = {
 let clDB;
 function clDbInit() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open('HomeBaseClosetDB', 1);
+    const r = indexedDB.open('HomeBaseClosetDB', 2);
     r.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains('cl_clothes')) d.createObjectStore('cl_clothes', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('cl_outfits')) d.createObjectStore('cl_outfits', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('dy_voices'))  d.createObjectStore('dy_voices',  { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('dy_fights'))  d.createObjectStore('dy_fights',  { keyPath: 'id' });
     };
     r.onsuccess = e => { clDB = e.target.result; res(); };
     r.onerror = rej;
@@ -1721,6 +1954,178 @@ async function clDeleteOutfit(id) {
   clState.outfits = clState.outfits.filter(o => o.id !== id);
   clRenderRecords();
   toast('已删除');
+}
+
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+// DIARY
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+const dyState = {
+  voices: [],
+  fights: [],
+  currentPage: 'voice',
+  selectedMood: '🥰',
+  selectedWho: '互相的',
+  madeUp: true,
+};
+
+function dySwitchPage(pg) {
+  dyState.currentPage = pg;
+  document.querySelectorAll('.dy-sub-tab').forEach(b => b.classList.toggle('active', b.dataset.pg === pg));
+  document.querySelectorAll('.dy-page').forEach(p => p.classList.toggle('active', p.id === `dy-pg-${pg}`));
+  document.getElementById('fab-dy-add').classList.toggle('visible', currentSection === 'diary');
+  const sub = document.getElementById('dy-sub-title');
+  sub.textContent = pg === 'voice' ? `${dyState.voices.length} 条心声` : `${dyState.fights.length} 条记录`;
+}
+
+// ─── Voice ───
+function dyRenderVoices() {
+  const list  = document.getElementById('dy-voices-list');
+  const empty = document.getElementById('dy-voice-empty');
+  if (!dyState.voices.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = dyState.voices.map(v => `
+    <div class="dy-voice-card">
+      <div class="dy-voice-top">
+        <span class="dy-voice-mood">${v.mood}</span>
+        <span class="dy-voice-date">${v.date}</span>
+      </div>
+      <div class="dy-voice-content">${esc(v.content)}</div>
+      <div class="dy-card-del" onclick="dyDeleteVoice('${v.id}')">删除</div>
+    </div>
+  `).join('');
+}
+
+function dyOpenVoiceModal() {
+  dyState.selectedMood = '🥰';
+  document.getElementById('dy-voice-inp').value = '';
+  document.querySelectorAll('.dy-mood-btn').forEach(b => b.classList.toggle('on', b.dataset.mood === '🥰'));
+  document.getElementById('dy-voice-modal').classList.add('show');
+  setTimeout(() => document.getElementById('dy-voice-inp').focus(), 220);
+}
+function dyCloseVoiceModal() { document.getElementById('dy-voice-modal').classList.remove('show'); }
+
+function dyPickMood(m) {
+  dyState.selectedMood = m;
+  document.querySelectorAll('.dy-mood-btn').forEach(b => b.classList.toggle('on', b.dataset.mood === m));
+}
+
+async function dySaveVoice() {
+  const content = document.getElementById('dy-voice-inp').value.trim();
+  if (!content) { document.getElementById('dy-voice-inp').focus(); return; }
+  const entry = {
+    id: `v${Date.now()}`,
+    mood: dyState.selectedMood,
+    content,
+    date: new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }),
+    createdAt: Date.now()
+  };
+  await clDbPut('dy_voices', entry);
+  dyState.voices.unshift(entry);
+  dyCloseVoiceModal();
+  dyRenderVoices();
+  document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+  toast('已记下来 💕');
+}
+
+async function dyDeleteVoice(id) {
+  if (!confirm('删除这条心声？')) return;
+  await clDbDel('dy_voices', id);
+  dyState.voices = dyState.voices.filter(v => v.id !== id);
+  dyRenderVoices();
+  document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+  toast('已删除');
+}
+
+// ─── Fight ───
+function dyRenderFights() {
+  const list  = document.getElementById('dy-fights-list');
+  const empty = document.getElementById('dy-fight-empty');
+  if (!dyState.fights.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = dyState.fights.map(f => `
+    <div class="dy-fight-card">
+      <div class="dy-fight-top">
+        <div class="dy-fight-meta">
+          <span class="dy-who-badge">${esc(f.who)}</span>
+          <span class="dy-fight-date">${f.date}</span>
+        </div>
+        <span class="dy-madeup-badge ${f.madeUp?'yes':'no'}">${f.madeUp?'🤝 和好了':'😶 未解决'}</span>
+      </div>
+      <div class="dy-fight-row">
+        <div class="dy-fight-label">起因</div>
+        <div class="dy-fight-body">${esc(f.cause)}</div>
+      </div>
+      ${f.resolve ? `<div class="dy-fight-row"><div class="dy-fight-label">怎么解决的</div><div class="dy-fight-body">${esc(f.resolve)}</div></div>` : ''}
+      <div class="dy-card-del" onclick="dyDeleteFight('${f.id}')">删除</div>
+    </div>
+  `).join('');
+}
+
+function dyOpenFightModal() {
+  dyState.selectedWho = '互相的';
+  dyState.madeUp = true;
+  document.getElementById('dy-fight-cause').value = '';
+  document.getElementById('dy-fight-resolve').value = '';
+  document.querySelectorAll('.dy-who-btn').forEach(b => b.classList.toggle('on', b.dataset.who === '互相的'));
+  const row = document.getElementById('dy-madeup-row');
+  row.className = 'dy-madeup-row yes';
+  document.getElementById('dy-madeup-sw').classList.add('on');
+  document.getElementById('dy-madeup-label').textContent = '和好啦';
+  document.getElementById('dy-madeup-emoji').textContent = '🤝';
+  document.getElementById('dy-fight-modal').classList.add('show');
+  setTimeout(() => document.getElementById('dy-fight-cause').focus(), 220);
+}
+function dyCloseFightModal() { document.getElementById('dy-fight-modal').classList.remove('show'); }
+
+function dyPickWho(w) {
+  dyState.selectedWho = w;
+  document.querySelectorAll('.dy-who-btn').forEach(b => b.classList.toggle('on', b.dataset.who === w));
+}
+
+function dyToggleMadeUp() {
+  dyState.madeUp = !dyState.madeUp;
+  const row = document.getElementById('dy-madeup-row');
+  row.className = 'dy-madeup-row ' + (dyState.madeUp ? 'yes' : 'no');
+  document.getElementById('dy-madeup-sw').classList.toggle('on', dyState.madeUp);
+  document.getElementById('dy-madeup-label').textContent = dyState.madeUp ? '和好啦' : '还没和好';
+  document.getElementById('dy-madeup-emoji').textContent = dyState.madeUp ? '🤝' : '😶';
+}
+
+async function dySaveFight() {
+  const cause = document.getElementById('dy-fight-cause').value.trim();
+  if (!cause) { document.getElementById('dy-fight-cause').focus(); return; }
+  const entry = {
+    id: `f${Date.now()}`,
+    cause,
+    who: dyState.selectedWho,
+    resolve: document.getElementById('dy-fight-resolve').value.trim(),
+    madeUp: dyState.madeUp,
+    date: new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }),
+    createdAt: Date.now()
+  };
+  await clDbPut('dy_fights', entry);
+  dyState.fights.unshift(entry);
+  dyCloseFightModal();
+  dyRenderFights();
+  document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
+  toast('已记录');
+}
+
+async function dyDeleteFight(id) {
+  if (!confirm('删除这条记录？')) return;
+  await clDbDel('dy_fights', id);
+  dyState.fights = dyState.fights.filter(f => f.id !== id);
+  dyRenderFights();
+  document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
+  toast('已删除');
+}
+
+// 分发 FAB 点击到当前子页
+function dyOpenAddModal() {
+  if (dyState.currentPage === 'voice') dyOpenVoiceModal();
+  else dyOpenFightModal();
 }
 </script>
 </body>
