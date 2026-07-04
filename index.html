@@ -1370,10 +1370,6 @@
       <label class="field-label" id="f-brand-label">品牌 / 型号</label>
       <input class="field-input" type="text" id="f-brand" placeholder="如：高露洁亮白">
     </div>
-    <div class="field-group" id="f-cardno-group" style="display:none">
-      <label class="field-label">卡号 / 账号</label>
-      <input class="field-input" type="text" id="f-cardno" placeholder="如：138xxxx7654">
-    </div>
     <div class="field-group">
       <label class="field-label" id="f-link-label">购买链接</label>
       <input class="field-input" type="url" id="f-link" placeholder="淘宝 / 京东 / 拼多多链接">
@@ -1470,7 +1466,7 @@
     <div class="modal-title">添加单品</div>
 
     <div class="cl-upload-area" onclick="document.getElementById('cl-file-inp').click()">
-      <input type="file" id="cl-file-inp" accept="image/*" capture="environment" style="display:none" onchange="clOnFile(event)">
+      <input type="file" id="cl-file-inp" accept="image/*" style="display:none" onchange="clOnFile(event)">
       <div class="cl-upload-ph" id="cl-upload-ph">
         <div class="cl-upload-ico">📷</div>
         <div class="cl-upload-hint">拍照 / 从相册选择</div>
@@ -2068,9 +2064,8 @@ function rebuildCategorySelect() {
 function onCatChange() {
   const cat = document.getElementById('f-category')?.value;
   const isVip = cat === '会员';
-  document.getElementById('f-brand-label').textContent = isVip ? '品牌 / 服务方' : '品牌 / 型号';
-  document.getElementById('f-brand').placeholder = isVip ? '如：淘宝、优酷、Netflix' : '如：高露洁亮白';
-  document.getElementById('f-cardno-group').style.display = isVip ? 'block' : 'none';
+  document.getElementById('f-brand-label').textContent = isVip ? '卡号 / 账号' : '品牌 / 型号';
+  document.getElementById('f-brand').placeholder = isVip ? '如：138xxxx7654' : '如：高露洁亮白';
   document.getElementById('f-link-label').textContent = isVip ? '官网 / 官方入口' : '购买链接';
   document.getElementById('f-link').placeholder = isVip ? '官网网址' : '淘宝 / 京东 / 拼多多链接';
 }
@@ -2126,14 +2121,15 @@ function openDetail(id) {
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-cat">${item.category}</div>
     <div class="detail-name">${esc(item.name)}</div>
-    ${item.brand ? `<div class="detail-brand">${esc(item.brand)}</div>` : '<div style="height:14px"></div>'}
+    ${isVip && item.brand
+      ? `<div class="detail-sec" style="margin-bottom:14px"><div class="detail-sec-label">卡号 / 账号</div><div class="detail-sec-body"><span class="detail-cardno">${esc(item.brand)}</span></div></div>`
+      : item.brand ? `<div class="detail-brand">${esc(item.brand)}</div>` : '<div style="height:14px"></div>'}
     ${isVip ? '' : `
     <div class="restock-toggle ${item.needs_restock?'on':''}" onclick="toggleRestock('${item.id}')">
       <span style="font-size:20px">${item.needs_restock?'⚠️':'✅'}</span>
       <span class="toggle-label">${item.needs_restock?'需要补货':'库存充足'}</span>
       <div class="toggle-sw ${item.needs_restock?'on':''}"><div class="toggle-knob"></div></div>
     </div>`}
-    ${isVip && item.cardno ? `<div class="detail-sec"><div class="detail-sec-label">卡号 / 账号</div><div class="detail-sec-body"><span class="detail-cardno">${esc(item.cardno)}</span></div></div>` : ''}
     ${item.notes ? `<div class="detail-sec"><div class="detail-sec-label">备注</div><div class="detail-sec-body">${esc(item.notes)}</div></div>` : ''}
     ${item.link ? `<div class="detail-sec"><div class="detail-sec-label">${isVip?'官网':'购买链接'}</div><a class="detail-link" href="${esc(item.link)}" target="_blank">${esc(item.link)}</a></div>` : ''}
     ${item.tags?.length ? `<div class="detail-sec"><div class="detail-sec-label">标签</div><div class="item-card-tags" style="margin-top:4px">${item.tags.map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div></div>` : ''}
@@ -2180,7 +2176,6 @@ function openAddModal() {
   document.getElementById('item-modal-title').textContent = '添加好物';
   document.getElementById('f-name').value = '';
   document.getElementById('f-brand').value = '';
-  document.getElementById('f-cardno').value = '';
   document.getElementById('f-link').value = '';
   document.getElementById('f-notes').value = '';
   rebuildCategorySelect();
@@ -2203,7 +2198,6 @@ function editItem(id) {
   document.getElementById('f-category').value = item.category;
   onCatChange();
   document.getElementById('f-brand').value = item.brand || '';
-  document.getElementById('f-cardno').value = item.cardno || '';
   document.getElementById('f-link').value = item.link || '';
   document.getElementById('f-notes').value = item.notes || '';
   renderTagPicker();
@@ -2243,7 +2237,6 @@ async function saveItem() {
     name,
     category: document.getElementById('f-category').value,
     brand: document.getElementById('f-brand').value.trim() || null,
-    cardno: document.getElementById('f-cardno').value.trim() || null,
     link: document.getElementById('f-link').value.trim() || null,
     notes: document.getElementById('f-notes').value.trim() || null,
     tags: selectedTags,
