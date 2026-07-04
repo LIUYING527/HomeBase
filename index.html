@@ -859,6 +859,37 @@
     .bd-entry-del  { font-size: 11px; color: var(--text-3); cursor: pointer; margin-top: 3px; }
 
     /* Fund page */
+    /* ─── Fund page ─── */
+    .bd-fund-btns { display: flex; gap: 12px; padding: 16px 18px 6px; }
+    .bd-fund-btn {
+      flex: 1; padding: 14px 0; border-radius: 14px; border: none;
+      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: opacity .15s;
+    }
+    .bd-fund-btn:active { opacity: .8; }
+    .bd-fund-btn.deposit { background: #dcfce7; color: #15803d; }
+    .bd-fund-btn.withdraw { background: #fee2e2; color: #dc2626; }
+    .bd-fund-tx-list { padding: 6px 18px 16px; }
+    .bd-fund-tx-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .bd-fund-tx-item:last-child { border-bottom: none; }
+    .bd-fund-tx-ico {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .bd-fund-tx-ico.dep { background: #dcfce7; }
+    .bd-fund-tx-ico.wdw { background: #fee2e2; }
+    .bd-fund-tx-info { flex: 1; min-width: 0; }
+    .bd-fund-tx-note { font-size: 14px; font-weight: 600; }
+    .bd-fund-tx-date { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .bd-fund-tx-amt { font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .bd-fund-tx-del { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+    /* 预算可点击 */
+    .bd-budget-edit { cursor: pointer; text-decoration: underline dotted; }
+
     .bd-fund-card {
       margin: 16px 18px 0; border-radius: var(--r); padding: 24px;
       background: linear-gradient(135deg, #1e3a5f, #1e40af); color: white; text-align: center;
@@ -1219,7 +1250,7 @@
           <div class="bd-bal-amount" id="bd-remaining">--</div>
         </div>
         <div class="bd-bal-right">
-          <div class="bd-bal-small">预算 <span id="bd-budget-label">¥2000</span></div>
+          <div class="bd-bal-small">预算 <span id="bd-budget-label" class="bd-budget-edit" onclick="bdEditBudget()">¥2000</span></div>
           <div class="bd-bal-small">已花 <span id="bd-spent-label">¥0</span></div>
         </div>
       </div>
@@ -1240,9 +1271,13 @@
     <div class="bd-fund-card">
       <div class="bd-fund-label">旅游基金</div>
       <div class="bd-fund-amount" id="bd-fund-amount">¥0</div>
-      <div class="bd-fund-hint">每月结余自动累计</div>
+      <div class="bd-fund-hint" id="bd-fund-hint">共存入¥0 · 已取出¥0</div>
     </div>
-    <div class="bd-fund-history" id="bd-fund-history"></div>
+    <div class="bd-fund-btns">
+      <button class="bd-fund-btn deposit" onclick="bdOpenFundModal('存')">＋ 存入</button>
+      <button class="bd-fund-btn withdraw" onclick="bdOpenFundModal('取')">－ 取出</button>
+    </div>
+    <div class="bd-fund-tx-list" id="bd-fund-tx-list"></div>
   </div>
 </div>
 
@@ -1648,6 +1683,50 @@
     <div class="modal-title">给这套穿搭起个名字</div>
     <input class="cl-input" id="cl-outfit-name" placeholder="例：日常通勤、约会、周末逛街…">
     <button class="cl-btn-primary" onclick="clConfirmSave()">保存</button>
+  </div>
+</div>
+
+<!-- ─── 基金存取弹窗 ─── -->
+<div class="modal-overlay" id="bd-fund-modal" onclick="if(event.target===this)bdCloseFundModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="bd-fund-modal-title">存入基金</div>
+    <div class="field-group">
+      <label class="field-label">金额 *</label>
+      <div class="bd-amount-wrap">
+        <span class="bd-amount-prefix">¥</span>
+        <input class="field-input" type="number" id="bd-fund-inp-amount"
+               style="padding-left:30px;font-size:22px;font-weight:700" placeholder="0" inputmode="decimal">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">备注</label>
+      <input class="field-input" type="text" id="bd-fund-inp-note" placeholder="例：3月份攒的钱">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="bdCloseFundModal()">取消</button>
+      <button class="btn-primary" style="flex:1" id="bd-fund-save-btn" onclick="bdSaveFundEntry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 预算编辑弹窗 ─── -->
+<div class="modal-overlay" id="bd-budget-modal" onclick="if(event.target===this)bdCloseBudgetModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">修改月预算</div>
+    <div class="field-group">
+      <label class="field-label">每月预算（元）</label>
+      <div class="bd-amount-wrap">
+        <span class="bd-amount-prefix">¥</span>
+        <input class="field-input" type="number" id="bd-budget-inp"
+               style="padding-left:30px;font-size:22px;font-weight:700" placeholder="2000" inputmode="decimal">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="bdCloseBudgetModal()">取消</button>
+      <button class="btn-primary" style="flex:1" onclick="bdSaveBudget()">保存</button>
+    </div>
   </div>
 </div>
 
@@ -2934,9 +3013,13 @@ const BD_CATS = [
   { key:'其他', emoji:'📦', color:'#6b7280', bg:'#f9fafb' },
 ];
 
-const bdState = { entries: [], currentMonth: '', page: 'ledger', selCat: null, selWho: '我' };
+const bdState = { entries: [], fundEntries: [], currentMonth: '', page: 'ledger', selCat: null, selWho: '我', fundType: '存' };
 
 function bdGetBudget() { return parseInt(localStorage.getItem('hb_monthly_budget') || '2000'); }
+function bdSetBudget(v) {
+  localStorage.setItem('hb_monthly_budget', String(v));
+  document.getElementById('bd-budget-label').textContent = `¥${v}`;
+}
 
 function bdCurrentYM() {
   const d = new Date();
@@ -2983,8 +3066,10 @@ async function bdLoadEntries() {
     const { data, error } = await sb.from('hb_budget_entries')
       .select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    bdState.entries = data || [];
-  } catch { bdState.entries = []; }
+    const all = data || [];
+    bdState.fundEntries = all.filter(e => e.category === '旅游基金');
+    bdState.entries = all.filter(e => e.category !== '旅游基金');
+  } catch { bdState.entries = []; bdState.fundEntries = []; }
 }
 
 function bdMonthEntries(ym) {
@@ -2993,6 +3078,7 @@ function bdMonthEntries(ym) {
 
 function bdRenderLedger() {
   const budget  = bdGetBudget();
+  document.getElementById('bd-budget-label').textContent = `¥${budget}`;
   const entries = bdMonthEntries(bdState.currentMonth).sort((a,b) => b.created_at.localeCompare(a.created_at));
   const total   = entries.reduce((s, e) => s + parseFloat(e.amount), 0);
   const remain  = budget - total;
@@ -3060,33 +3146,91 @@ function bdRenderLedger() {
 }
 
 function bdRenderFund() {
-  const budget     = bdGetBudget();
-  const currentYM  = bdCurrentYM();
-  const monthMap   = {};
-  bdState.entries.forEach(e => {
-    const ym = e.created_at.substring(0, 7);
-    if (ym >= currentYM) return;
-    monthMap[ym] = (monthMap[ym] || 0) + parseFloat(e.amount);
+  const list = bdState.fundEntries.slice().sort((a,b) => b.created_at.localeCompare(a.created_at));
+  let totalIn = 0, totalOut = 0;
+  list.forEach(e => {
+    if (e.who === '存') totalIn += parseFloat(e.amount);
+    else totalOut += parseFloat(e.amount);
   });
-  const months = Object.keys(monthMap).sort().reverse();
-  let total = 0;
-  const rows = months.map(ym => {
-    const surplus = budget - monthMap[ym];
-    const contrib = Math.max(0, surplus);
-    total += contrib;
-    return { ym, surplus, contrib };
+  const balance = totalIn - totalOut;
+  document.getElementById('bd-fund-amount').textContent = `¥${balance.toFixed(0)}`;
+  document.getElementById('bd-fund-hint').textContent = `共存入¥${totalIn.toFixed(0)} · 已取出¥${totalOut.toFixed(0)}`;
+
+  const el = document.getElementById('bd-fund-tx-list');
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3);font-size:14px">还没有记录<br>点上方按钮存入第一笔</div>';
+    return;
+  }
+  el.innerHTML = list.map(e => {
+    const isDeposit = e.who === '存';
+    const d = new Date(e.created_at);
+    const dt = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div class="bd-fund-tx-item">
+      <div class="bd-fund-tx-ico ${isDeposit?'dep':'wdw'}">${isDeposit?'💰':'💸'}</div>
+      <div class="bd-fund-tx-info">
+        <div class="bd-fund-tx-note">${esc(e.note || (isDeposit?'存入':'取出'))}</div>
+        <div class="bd-fund-tx-date">${dt}</div>
+      </div>
+      <div class="bd-fund-tx-amt" style="color:${isDeposit?'#15803d':'#dc2626'}">
+        ${isDeposit?'+':'-'}¥${parseFloat(e.amount).toFixed(0)}
+      </div>
+      <button class="bd-fund-tx-del" onclick="bdDeleteFundEntry('${e.id}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function bdOpenFundModal(type) {
+  bdState.fundType = type;
+  document.getElementById('bd-fund-modal-title').textContent = type === '存' ? '存入基金' : '从基金取出';
+  document.getElementById('bd-fund-save-btn').style.background = type === '存' ? '#15803d' : '#dc2626';
+  document.getElementById('bd-fund-inp-amount').value = '';
+  document.getElementById('bd-fund-inp-note').value = '';
+  document.getElementById('bd-fund-modal').classList.add('show');
+  setTimeout(() => document.getElementById('bd-fund-inp-amount').focus(), 220);
+}
+function bdCloseFundModal() { document.getElementById('bd-fund-modal').classList.remove('show'); }
+
+async function bdSaveFundEntry() {
+  const amt = parseFloat(document.getElementById('bd-fund-inp-amount').value);
+  if (!amt || amt <= 0) { document.getElementById('bd-fund-inp-amount').focus(); return; }
+  const note = document.getElementById('bd-fund-inp-note').value.trim() || null;
+  try {
+    const { data, error } = await sb.from('hb_budget_entries').insert([{
+      amount: amt, category: '旅游基金', note, who: bdState.fundType
+    }]).select().single();
+    if (error) throw error;
+    bdState.fundEntries.unshift(data);
+    bdCloseFundModal();
+    bdRenderFund();
+    toast(bdState.fundType === '存' ? `已存入 ¥${amt.toFixed(0)} 💰` : `已取出 ¥${amt.toFixed(0)}`);
+  } catch { toast('保存失败，请检查网络'); }
+}
+
+function bdDeleteFundEntry(id) {
+  showConfirm('删除这条基金记录？', async () => {
+    try {
+      const { error } = await sb.from('hb_budget_entries').delete().eq('id', id);
+      if (error) throw error;
+      bdState.fundEntries = bdState.fundEntries.filter(e => e.id !== id);
+      bdRenderFund();
+      toast('已删除');
+    } catch { toast('删除失败'); }
   });
-  document.getElementById('bd-fund-amount').textContent = `¥${total.toFixed(0)}`;
-  const hist = document.getElementById('bd-fund-history');
-  hist.innerHTML = rows.length
-    ? `<div class="bd-section-label">月度明细</div>` + rows.map(r => `
-        <div class="bd-fund-row">
-          <span class="bd-fund-row-label">${bdMonthLabel(r.ym)}</span>
-          <span class="bd-fund-row-amt ${r.contrib>0?'pos':'neg'}">
-            ${r.contrib>0?'+':''}¥${r.contrib.toFixed(0)}${r.surplus<0?' (超支)':''}
-          </span>
-        </div>`).join('')
-    : '<div style="text-align:center;padding:30px;color:var(--text-3);font-size:14px">完成第一个完整月后自动累计</div>';
+}
+
+function bdEditBudget() {
+  document.getElementById('bd-budget-inp').value = bdGetBudget();
+  document.getElementById('bd-budget-modal').classList.add('show');
+  setTimeout(() => document.getElementById('bd-budget-inp').select(), 200);
+}
+function bdCloseBudgetModal() { document.getElementById('bd-budget-modal').classList.remove('show'); }
+function bdSaveBudget() {
+  const v = parseInt(document.getElementById('bd-budget-inp').value);
+  if (!v || v <= 0) return;
+  bdSetBudget(v);
+  bdCloseBudgetModal();
+  bdRenderLedger();
+  toast(`预算已改为 ¥${v}`);
 }
 
 function bdOpenAddModal() {
