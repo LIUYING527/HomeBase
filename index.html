@@ -495,9 +495,9 @@
       font-size: 13px; font-weight: 500; white-space: nowrap;
       cursor: pointer; color: var(--text-2); transition: all .15s;
     }
-    .cl-owner-tab.active {
-      background: var(--dy-pink-dark); border-color: var(--dy-pink-dark); color: white;
-    }
+    .cl-owner-tab.active { background: #2E2E2E; border-color: #2E2E2E; color: white; }
+    .cl-owner-tab[data-owner="me"].active { background: #db2777; border-color: #db2777; }
+    .cl-owner-tab[data-owner="ta"].active { background: #3b82f6; border-color: #3b82f6; }
 
     /* ─── Closet "谁的" selector ─── */
     .cl-who-row { display: flex; gap: 10px; margin-bottom: 2px; }
@@ -1122,12 +1122,8 @@
   <div class="id-card">
     <div class="id-q">你是谁？</div>
     <div class="id-btns">
-      <button class="id-btn me" onclick="selectIdentity('我')">
-        👩<span>我的</span>
-      </button>
-      <button class="id-btn ta" onclick="selectIdentity('TA')">
-        👨<span>TA的</span>
-      </button>
+      <button class="id-btn me" onclick="selectIdentity('我')">👩</button>
+      <button class="id-btn ta" onclick="selectIdentity('TA')">👨</button>
     </div>
   </div>
 </div>
@@ -1187,8 +1183,8 @@
   <div class="cl-page active" id="cl-pg-wardrobe">
     <div class="cl-owner-tabs" id="cl-owner-tabs">
       <button class="cl-owner-tab active" data-owner="all">全部</button>
-      <button class="cl-owner-tab" data-owner="me">我的</button>
-      <button class="cl-owner-tab" data-owner="ta">TA的</button>
+      <button class="cl-owner-tab" data-owner="me" style="color:#db2777">👩</button>
+      <button class="cl-owner-tab" data-owner="ta" style="color:#3b82f6">👨</button>
     </div>
     <div class="cl-cat-tabs" id="cl-cat-tabs">
       <button class="cl-cat-tab active" data-cat="all">全部</button>
