@@ -1796,6 +1796,16 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── 性别颜色辅助（固定：'我'=粉=👩，'TA'=蓝=👨，与当前身份无关）───
+function whoClr(stored) { return stored === '我' ? '#db2777' : '#3b82f6'; }
+function whoBg(stored)  { return stored === '我' ? '#fce7f3' : '#eff6ff'; }
+function whoIco(stored) { return stored === '我' ? '👩' : '👨'; }
+function whoTag(stored, showIcon) {
+  if (!stored) return '';
+  const c = whoClr(stored), b = whoBg(stored), ico = showIcon !== false ? whoIco(stored)+' ' : '';
+  return `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${b};color:${c};font-weight:700">${ico}</span>`;
+}
+
 // ─── 自定义确认弹窗 ───
 let _cfmCallback = null;
 function showConfirm(msg, sub, onOk) {
@@ -2396,16 +2406,15 @@ function clRenderWardrobe() {
   }
   empty.style.display = 'none';
   grid.innerHTML = list.map(c => {
-    const isMe = !c.owner || c.owner === currentIdentity;
-    const ownerColor = isMe ? 'var(--dy-pink-dark)' : '#3b82f6';
-    const ownerLabel = isMe ? '我' : 'TA';
+    const owner = c.owner || '我';
+    const oc = whoClr(owner), ob = whoBg(owner), oico = whoIco(owner);
     return `
     <div class="cl-cloth-card" data-id="${c.id}">
       <img src="${c.image}" alt="${esc(c.name)}" loading="lazy">
       <div class="cl-cloth-info">
         <div style="display:flex;align-items:center;gap:5px">
           <div class="cl-cloth-name">${esc(c.name)}</div>
-          <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${ownerColor}20;color:${ownerColor};font-weight:700;flex-shrink:0">${ownerLabel}</span>
+          <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${ob};color:${oc};font-weight:700;flex-shrink:0">${oico}</span>
         </div>
         <div class="cl-cloth-meta">${CL_CAT_LABEL[c.category]||''}${c.color?' · '+esc(c.color):''}</div>
       </div>
@@ -2716,16 +2725,13 @@ function dyRenderVoices() {
   if (!dyState.voices.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   list.innerHTML = dyState.voices.map(v => {
-    const isMe = !v.who || v.who === currentIdentity;
-    const label       = isMe ? '我' : 'TA';
-    const borderColor = isMe ? 'var(--dy-pink)' : '#3b82f6';
-    const whoColor    = isMe ? 'var(--dy-pink-dark)' : '#1d4ed8';
-    const whoBg       = isMe ? 'var(--dy-pink-light)' : '#eff6ff';
+    const stored = v.who || '我';
+    const borderColor = whoClr(stored);
     return `
     <div class="dy-voice-card" style="border-left-color:${borderColor}">
       <div class="dy-voice-top">
         <span class="dy-voice-mood">${v.mood}</span>
-        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoBg};color:${whoColor};font-weight:700">${label}</span>
+        ${whoTag(stored)}
         <span class="dy-voice-date">${v.date}</span>
       </div>
       <div class="dy-voice-content">${esc(v.content)}</div>
@@ -2809,16 +2815,23 @@ function dyRenderFights() {
   if (!dyState.fights.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   list.innerHTML = dyState.fights.map(f => {
-    // who field for fights: '我先的'/'TA先的'/'互相的'
-    // Convert stored identities back to relative labels
-    let whoDisplay = f.who;
-    if (f.who === currentIdentity + '先的') whoDisplay = '我先的';
-    else if (f.who === identityOther() + '先的') whoDisplay = 'TA先的';
+    // who field: '我先的'/'TA先的'/'互相的'
+    let whoDisplay = f.who, badgeStyle = '';
+    if (f.who && f.who.startsWith('我')) {
+      badgeStyle = `background:${whoBg('我')};color:${whoClr('我')}`;
+      whoDisplay = `${whoIco('我')} 先`;
+    } else if (f.who && f.who.startsWith('TA')) {
+      badgeStyle = `background:${whoBg('TA')};color:${whoClr('TA')}`;
+      whoDisplay = `${whoIco('TA')} 先`;
+    } else {
+      badgeStyle = 'background:#f3e8ff;color:#7c3aed';
+      whoDisplay = '互相的';
+    }
     return `
     <div class="dy-fight-card">
       <div class="dy-fight-top">
         <div class="dy-fight-meta">
-          <span class="dy-who-badge">${esc(whoDisplay)}</span>
+          <span class="dy-who-badge" style="${badgeStyle}">${whoDisplay}</span>
           <span class="dy-fight-date">${f.date}</span>
         </div>
         <span class="dy-madeup-badge ${f.made_up?'yes':'no'}">${f.made_up?'🤝 和好了':'😶 未解决'}</span>
@@ -3028,7 +3041,7 @@ function bdRenderLedger() {
     const c  = catOf(e.category);
     const d  = new Date(e.created_at);
     const ts = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const whoColor = e.who === 'TA' ? '#3b82f6' : '#db2777';
+    const stored = e.who || '我';
     return `<div class="bd-entry-item">
       <div class="bd-entry-ico" style="background:${c.bg}">${c.emoji}</div>
       <div class="bd-entry-info">
@@ -3038,7 +3051,7 @@ function bdRenderLedger() {
       <div class="bd-entry-right">
         <div class="bd-entry-amt">-¥${parseFloat(e.amount).toFixed(0)}</div>
         <div class="bd-entry-meta">
-          <span style="color:${whoColor};font-weight:600">${e.who||'我'}</span> · ${ts}
+          ${whoTag(stored)} · ${ts}
         </div>
         <div class="bd-entry-del" onclick="bdDeleteEntry('${e.id}')">删除</div>
       </div>
@@ -3283,26 +3296,42 @@ async function hwSaveTask() {
 }
 
 function hwShowHistory() {
+  hwRenderHistory();
+  document.getElementById('hw-history-modal').classList.add('show');
+}
+
+function hwRenderHistory() {
   const list = document.getElementById('hw-log-list');
   if (!hwState.logs.length) {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">还没有记录</div>';
-  } else {
-    list.innerHTML = hwState.logs.slice(0, 100).map(l => {
-      const d = new Date(l.done_at);
-      const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      const isMe = l.who === currentIdentity;
-      const label = isMe ? '我' : 'TA';
-      const whoColor = isMe ? '#db2777' : '#3b82f6';
-      return `<div class="hw-log-item">
-        <span class="hw-log-emoji">${l.task_emoji || '✅'}</span>
-        <span class="hw-log-name">${esc(l.task_name)}</span>
-        ${l.who ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${whoColor}20;color:${whoColor};font-weight:700">${label}</span>` : ''}
-        <span class="hw-log-time">${time}</span>
-      </div>`;
-    }).join('');
+    return;
   }
-  document.getElementById('hw-history-modal').classList.add('show');
+  list.innerHTML = hwState.logs.slice(0, 100).map(l => {
+    const d = new Date(l.done_at);
+    const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div class="hw-log-item">
+      <span class="hw-log-emoji">${l.task_emoji || '✅'}</span>
+      <span class="hw-log-name">${esc(l.task_name)}</span>
+      ${l.who ? whoTag(l.who) : ''}
+      <span class="hw-log-time">${time}</span>
+      <button onclick="hwDeleteLog('${l.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
+    </div>`;
+  }).join('');
 }
+
+function hwDeleteLog(id) {
+  showConfirm('删除这条打卡记录？', async () => {
+    try {
+      const { error } = await sb.from('hb_chore_logs').delete().eq('id', id);
+      if (error) throw error;
+      hwState.logs = hwState.logs.filter(l => l.id !== id);
+      hwRender();
+      hwRenderHistory();
+      toast('已删除');
+    } catch { toast('删除失败'); }
+  });
+}
+
 function hwCloseHistory() { document.getElementById('hw-history-modal').classList.remove('show'); }
 </script>
 </body>
