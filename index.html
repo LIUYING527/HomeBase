@@ -1872,7 +1872,7 @@ function showConfirm(msg, sub, onOk) {
   document.getElementById('cfm-msg').textContent = msg;
   document.getElementById('cfm-sub').textContent = sub || '此操作无法撤销';
   _cfmCallback = onOk;
-  document.getElementById('cfm-ok-btn').onclick = () => { hideConfirm(); if (_cfmCallback) _cfmCallback(); };
+  document.getElementById('cfm-ok-btn').onclick = () => { const cb = _cfmCallback; hideConfirm(); if (cb) cb(); };
   document.getElementById('cfm-overlay').classList.add('show');
 }
 function hideConfirm() { document.getElementById('cfm-overlay').classList.remove('show'); _cfmCallback = null; }
