@@ -1552,19 +1552,6 @@
   </div>
 </div>
 
-<!-- ─── Chores: Who Did It Modal ─── -->
-<div class="modal-overlay" id="hw-who-modal" onclick="if(event.target===this)hwCloseWhoModal()">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="hw-who-title">谁做的？</div>
-    <div style="display:flex;gap:12px">
-      <button class="btn-primary" style="flex:1;padding:18px;font-size:28px;background:#db2777"
-              onclick="hwConfirmWho('我')">👩</button>
-      <button class="btn-primary" style="flex:1;padding:18px;font-size:28px;background:#3b82f6"
-              onclick="hwConfirmWho('TA')">👨</button>
-    </div>
-  </div>
-</div>
 
 <!-- ─── Chores: Add Task Modal ─── -->
 <div class="modal-overlay" id="hw-add-modal" onclick="if(event.target===this)hwCloseAddModal()">
@@ -3291,7 +3278,7 @@ const HW_DEFAULTS = [
   { name:'倒垃圾', emoji:'🗑️' },
 ];
 
-const hwState = { tasks: [], logs: [], pendingTaskId: null };
+const hwState = { tasks: [], logs: [] };
 
 async function hwLoadAll() {
   try {
@@ -3354,24 +3341,14 @@ function hwRender() {
   });
 }
 
-function hwLog(taskId) {
-  const task = hwState.tasks.find(t => t.id === taskId);
-  if (!task) return;
-  hwState.pendingTaskId = taskId;
-  document.getElementById('hw-who-title').textContent = `${task.emoji} ${task.name} — 谁做的？`;
-  document.getElementById('hw-who-modal').classList.add('show');
-}
-function hwCloseWhoModal() { document.getElementById('hw-who-modal').classList.remove('show'); }
-
-async function hwConfirmWho(storedWho) {
-  document.getElementById('hw-who-modal').classList.remove('show');
-  const taskId = hwState.pendingTaskId;
-  hwState.pendingTaskId = null;
+async function hwLog(taskId) {
   const task = hwState.tasks.find(t => t.id === taskId);
   if (!task) return;
 
   const btn = document.getElementById(`hwb-${taskId}`);
   if (btn) { btn.classList.add('popping'); btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true }); }
+
+  const storedWho = currentIdentity;
   const entry = { task_id: taskId, task_name: task.name, task_emoji: task.emoji, who: storedWho, done_at: Date.now() };
   try {
     const { data, error } = await sb.from('hb_chore_logs').insert([entry]).select().single();
@@ -3444,17 +3421,17 @@ function hwRenderHistory() {
       <span class="hw-log-name">${esc(l.task_name)}</span>
       ${l.who ? whoTag(l.who) : ''}
       <span class="hw-log-time">${time}</span>
-      <button onclick="hwDeleteLog('${l.done_at}')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
+      <button onclick="hwDeleteLog('${l.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
     </div>`;
   }).join('');
 }
 
-function hwDeleteLog(doneAt) {
+function hwDeleteLog(logId) {
   showConfirm('删除这条打卡记录？', async () => {
     try {
-      const { error } = await sb.from('hb_chore_logs').delete().eq('done_at', Number(doneAt));
+      const { error } = await sb.from('hb_chore_logs').delete().eq('id', logId);
       if (error) throw error;
-      hwState.logs = hwState.logs.filter(l => String(l.done_at) !== String(doneAt));
+      hwState.logs = hwState.logs.filter(l => l.id !== logId);
       hwRender();
       hwRenderHistory();
       toast('已删除');
