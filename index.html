@@ -426,6 +426,94 @@
     .chat-input:focus { border-color: #7c3aed; }
     .chat-send { width: 42px; height: 42px; border-radius: 50%; background: #7c3aed; color: white; border: none; cursor: pointer; font-size: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
+    /* ─── Custom Confirm Modal ─── */
+    .cfm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 9000; display: none; align-items: center; justify-content: center; padding: 24px;
+    }
+    .cfm-overlay.show { display: flex; }
+    .cfm-box {
+      background: var(--surface); border-radius: 20px;
+      padding: 28px 22px 20px; width: 100%; max-width: 320px;
+      text-align: center; animation: fadeScale .2s ease;
+    }
+    @keyframes fadeScale { from{transform:scale(.92);opacity:0} to{transform:scale(1);opacity:1} }
+    .cfm-icon { font-size: 36px; margin-bottom: 10px; }
+    .cfm-msg { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .cfm-sub { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+    .cfm-btns { display: flex; gap: 10px; }
+    .cfm-cancel {
+      flex: 1; padding: 13px; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .cfm-ok {
+      flex: 1; padding: 13px; background: var(--danger); color: white;
+      border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+
+    /* ─── Cat Manager Modal ─── */
+    .catmgr-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .catmgr-name { font-size: 15px; font-weight: 500; }
+    .catmgr-del {
+      background: none; border: none; cursor: pointer;
+      color: var(--danger); font-size: 22px; line-height: 1; padding: 0 4px;
+    }
+    .catmgr-preset { font-size: 12px; color: var(--text-3); }
+    .cat-add-row { display: flex; gap: 8px; margin-top: 14px; }
+    .cat-add-inp {
+      flex: 1; padding: 10px 13px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 14px; outline: none; font-family: inherit;
+    }
+    .cat-add-inp:focus { border-color: var(--primary); }
+    .cat-add-btn {
+      padding: 10px 16px; background: var(--primary); color: white;
+      border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit;
+    }
+
+    /* ─── Cat Tabs with manage btn ─── */
+    .cat-tabs-wrap { display: flex; align-items: center; padding: 12px 18px; gap: 0; }
+    .cat-tabs-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+    .cat-tabs-scroll::-webkit-scrollbar { display: none; }
+    .cat-mgr-btn {
+      flex-shrink: 0; margin-left: 8px; width: 32px; height: 32px;
+      border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg);
+      cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+      color: var(--text-3); transition: all .15s;
+    }
+    .cat-mgr-btn:active { background: var(--border); }
+
+    /* ─── Closet owner filter ─── */
+    .cl-owner-tabs {
+      display: flex; gap: 8px; padding: 10px 18px 0;
+    }
+    .cl-owner-tab {
+      padding: 5px 14px; border-radius: 50px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; white-space: nowrap;
+      cursor: pointer; color: var(--text-2); transition: all .15s;
+    }
+    .cl-owner-tab.active {
+      background: var(--dy-pink-dark); border-color: var(--dy-pink-dark); color: white;
+    }
+
+    /* ─── Closet "谁的" selector ─── */
+    .cl-who-row { display: flex; gap: 10px; margin-bottom: 2px; }
+    .cl-who-btn {
+      flex: 1; padding: 10px 0; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); font-size: 14px; font-weight: 600;
+      cursor: pointer; text-align: center; transition: all .15s;
+    }
+    .cl-who-btn.on { border-color: var(--dy-pink-dark); background: var(--dy-pink-light); color: var(--dy-pink-dark); }
+
+    /* ─── 会员卡号标签 ─── */
+    .detail-cardno {
+      display: inline-block; background: #f3e8ff; color: #7c3aed;
+      border-radius: 8px; padding: 4px 12px; font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    }
+
     /* ═══════════════════════════════
        CLOSET SECTION
     ═══════════════════════════════ */
@@ -1000,17 +1088,14 @@
 
 <!-- Identity Selection -->
 <div id="identity-screen">
-  <div class="login-icon">💑</div>
-  <div class="login-title">你是谁？</div>
-  <div class="login-sub">选择身份，下次自动记住</div>
   <div class="id-card">
-    <div class="id-hint">选完后对方看你的记录都会标成「TA」</div>
+    <div class="id-q">你是谁？</div>
     <div class="id-btns">
       <button class="id-btn me" onclick="selectIdentity('我')">
-        👩 <span>我（刘莹）</span>
+        👩<span>我的</span>
       </button>
       <button class="id-btn ta" onclick="selectIdentity('TA')">
-        👨 <span>TA（男友）</span>
+        👨<span>TA的</span>
       </button>
     </div>
   </div>
@@ -1035,7 +1120,10 @@
     </div>
   </div>
 
-  <div class="cat-tabs" id="cat-tabs"></div>
+  <div class="cat-tabs-wrap">
+    <div class="cat-tabs-scroll" id="cat-tabs"></div>
+    <button class="cat-mgr-btn" onclick="openCatManager()" title="管理分类">⚙️</button>
+  </div>
 
   <div class="items-area">
     <div class="restock-bar" id="restock-bar" onclick="toggleRestockFilter()">
@@ -1066,6 +1154,11 @@
 
   <!-- Wardrobe page -->
   <div class="cl-page active" id="cl-pg-wardrobe">
+    <div class="cl-owner-tabs" id="cl-owner-tabs">
+      <button class="cl-owner-tab active" data-owner="all">全部</button>
+      <button class="cl-owner-tab" data-owner="me">我的</button>
+      <button class="cl-owner-tab" data-owner="ta">TA的</button>
+    </div>
     <div class="cl-cat-tabs" id="cl-cat-tabs">
       <button class="cl-cat-tab active" data-cat="all">全部</button>
       <button class="cl-cat-tab" data-cat="top">上装</button>
@@ -1236,20 +1329,18 @@
     </div>
     <div class="field-group">
       <label class="field-label">分类 *</label>
-      <select class="field-input" id="f-category">
-        <option value="洗护">🧴 洗护</option>
-        <option value="清洁">🧹 清洁</option>
-        <option value="厨房">🍳 厨房</option>
-        <option value="食品">🥫 食品</option>
-        <option value="其他">📦 其他</option>
-      </select>
+      <select class="field-input" id="f-category" onchange="onCatChange()"></select>
     </div>
     <div class="field-group">
-      <label class="field-label">品牌 / 型号</label>
+      <label class="field-label" id="f-brand-label">品牌 / 型号</label>
       <input class="field-input" type="text" id="f-brand" placeholder="如：高露洁亮白">
     </div>
+    <div class="field-group" id="f-cardno-group" style="display:none">
+      <label class="field-label">卡号 / 账号</label>
+      <input class="field-input" type="text" id="f-cardno" placeholder="如：138xxxx7654">
+    </div>
     <div class="field-group">
-      <label class="field-label">购买链接</label>
+      <label class="field-label" id="f-link-label">购买链接</label>
       <input class="field-input" type="url" id="f-link" placeholder="淘宝 / 京东 / 拼多多链接">
     </div>
     <div class="field-group">
@@ -1358,6 +1449,13 @@
     <div class="field-group" style="margin-top:16px">
       <label class="field-label">单品名称</label>
       <input class="field-input" id="cl-inp-name" placeholder="例：奶白色宽松卫衣">
+    </div>
+    <div class="field-group">
+      <label class="field-label">谁的衣服</label>
+      <div class="cl-who-row" id="cl-who-row">
+        <button class="cl-who-btn on" data-who="me" onclick="clPickOwner('me')">👩 我的</button>
+        <button class="cl-who-btn" data-who="ta" onclick="clPickOwner('ta')">👨 TA的</button>
+      </div>
     </div>
     <div class="field-group">
       <label class="field-label">分类</label>
@@ -1553,6 +1651,36 @@
   </div>
 </div>
 
+<!-- ─── 自定义确认弹窗 ─── -->
+<div class="cfm-overlay" id="cfm-overlay">
+  <div class="cfm-box">
+    <div class="cfm-icon" id="cfm-icon">🗑️</div>
+    <div class="cfm-msg" id="cfm-msg">确认删除？</div>
+    <div class="cfm-sub" id="cfm-sub">此操作无法撤销</div>
+    <div class="cfm-btns">
+      <button class="cfm-cancel" onclick="hideConfirm()">取消</button>
+      <button class="cfm-ok" id="cfm-ok-btn">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 分类管理弹窗 ─── -->
+<div class="modal-overlay" id="catmgr-modal" onclick="if(event.target===this)closeCatManager()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">管理分类</div>
+    <div id="catmgr-list"></div>
+    <div class="cat-add-row">
+      <input class="cat-add-inp" type="text" id="catmgr-inp" placeholder="输入新分类名称"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCat()}">
+      <button class="cat-add-btn" onclick="addCustomCat()">添加</button>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn-secondary" style="width:100%" onclick="closeCatManager()">完成</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════
 // SHARED CONFIG
@@ -1560,8 +1688,61 @@
 const APP_PASSWORD = '020124';
 const SUPABASE_URL = 'https://wzlypptsytnqfsmwxpzf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9rXFdTyDO2yai9uLBRJSNQ_6irPiu6E';
-const PRESET_CATS  = ['全部', '洗护', '清洁', '厨房', '食品', '其他'];
+const PRESET_CATS  = ['全部', '洗护', '清洁', '厨房', '食品', '会员', '数码', '其他'];
 const PRESET_TAGS  = ['日用', '高频', '囤货', '备用', '季节性'];
+
+// ─── 自定义分类管理 ───
+function loadCustomCats() {
+  try { return JSON.parse(localStorage.getItem('hb_cats') || 'null') || [...PRESET_CATS]; }
+  catch { return [...PRESET_CATS]; }
+}
+function saveCustomCats(cats) { localStorage.setItem('hb_cats', JSON.stringify(cats)); }
+let customCats = loadCustomCats();
+
+function openCatManager() {
+  renderCatManager();
+  document.getElementById('catmgr-inp').value = '';
+  document.getElementById('catmgr-modal').classList.add('show');
+}
+function closeCatManager() {
+  document.getElementById('catmgr-modal').classList.remove('show');
+  renderCatTabs();
+  rebuildCategorySelect();
+}
+
+function renderCatManager() {
+  document.getElementById('catmgr-list').innerHTML = customCats
+    .filter(c => c !== '全部')
+    .map(c => `
+      <div class="catmgr-item">
+        <span class="catmgr-name">${esc(c)}</span>
+        ${PRESET_CATS.includes(c)
+          ? '<span class="catmgr-preset">预设</span>'
+          : `<button class="catmgr-del" onclick="deleteCustomCat('${esc(c)}')">×</button>`}
+      </div>`).join('');
+}
+
+function addCustomCat() {
+  const inp = document.getElementById('catmgr-inp');
+  const name = inp.value.trim();
+  if (!name || customCats.includes(name)) { inp.focus(); return; }
+  // Insert before '其他' if exists, else append
+  const idx = customCats.indexOf('其他');
+  if (idx !== -1) customCats.splice(idx, 0, name);
+  else customCats.push(name);
+  saveCustomCats(customCats);
+  inp.value = '';
+  renderCatManager();
+}
+
+function deleteCustomCat(name) {
+  showConfirm(`删除分类「${name}」？`, '该分类下的条目仍会保留', () => {
+    customCats = customCats.filter(c => c !== name);
+    saveCustomCats(customCats);
+    if (currentCat === name) currentCat = '全部';
+    renderCatManager();
+  });
+}
 
 // ════════════════════════════════════════
 // SHARED STATE & UTILS
@@ -1614,6 +1795,19 @@ function toast(msg) {
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─── 自定义确认弹窗 ───
+let _cfmCallback = null;
+function showConfirm(msg, sub, onOk) {
+  // showConfirm(msg, onOk) OR showConfirm(msg, sub, onOk)
+  if (typeof sub === 'function') { onOk = sub; sub = '此操作无法撤销'; }
+  document.getElementById('cfm-msg').textContent = msg;
+  document.getElementById('cfm-sub').textContent = sub || '此操作无法撤销';
+  _cfmCallback = onOk;
+  document.getElementById('cfm-ok-btn').onclick = () => { hideConfirm(); if (_cfmCallback) _cfmCallback(); };
+  document.getElementById('cfm-overlay').classList.add('show');
+}
+function hideConfirm() { document.getElementById('cfm-overlay').classList.remove('show'); _cfmCallback = null; }
 
 function fmtDate(ts) {
   const d = ts ? new Date(ts) : new Date();
@@ -1690,7 +1884,9 @@ async function startApp() {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const saved = localStorage.getItem('hb_tags');
   if (saved) { try { allTags = JSON.parse(saved); } catch {} }
+  customCats = loadCustomCats();
   renderCatTabs();
+  rebuildCategorySelect();
   await loadItems();
   subscribeRealtime();
 
@@ -1764,9 +1960,30 @@ function setSyncState(s) {
 }
 
 function renderCatTabs() {
-  document.getElementById('cat-tabs').innerHTML = PRESET_CATS.map(c =>
+  document.getElementById('cat-tabs').innerHTML = customCats.map(c =>
     `<button class="cat-tab ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`
   ).join('');
+}
+
+function rebuildCategorySelect() {
+  const sel = document.getElementById('f-category');
+  if (!sel) return;
+  const cur = sel.value;
+  const cats = customCats.filter(c => c !== '全部');
+  const CAT_EMOJI = { '洗护':'🧴','清洁':'🧹','厨房':'🍳','食品':'🥫','会员':'💳','数码':'📱','其他':'📦' };
+  sel.innerHTML = cats.map(c => `<option value="${esc(c)}">${CAT_EMOJI[c]||'📂'} ${esc(c)}</option>`).join('');
+  if (cats.includes(cur)) sel.value = cur;
+  onCatChange();
+}
+
+function onCatChange() {
+  const cat = document.getElementById('f-category')?.value;
+  const isVip = cat === '会员';
+  document.getElementById('f-brand-label').textContent = isVip ? '品牌 / 服务方' : '品牌 / 型号';
+  document.getElementById('f-brand').placeholder = isVip ? '如：淘宝、优酷、Netflix' : '如：高露洁亮白';
+  document.getElementById('f-cardno-group').style.display = isVip ? 'block' : 'none';
+  document.getElementById('f-link-label').textContent = isVip ? '官网 / 官方入口' : '购买链接';
+  document.getElementById('f-link').placeholder = isVip ? '官网网址' : '淘宝 / 京东 / 拼多多链接';
 }
 
 function setCat(c) { currentCat = c; restockOnly = false; renderCatTabs(); renderItems(); }
@@ -1816,17 +2033,20 @@ function renderItems() {
 function openDetail(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
+  const isVip = item.category === '会员';
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-cat">${item.category}</div>
     <div class="detail-name">${esc(item.name)}</div>
     ${item.brand ? `<div class="detail-brand">${esc(item.brand)}</div>` : '<div style="height:14px"></div>'}
+    ${isVip ? '' : `
     <div class="restock-toggle ${item.needs_restock?'on':''}" onclick="toggleRestock('${item.id}')">
       <span style="font-size:20px">${item.needs_restock?'⚠️':'✅'}</span>
       <span class="toggle-label">${item.needs_restock?'需要补货':'库存充足'}</span>
       <div class="toggle-sw ${item.needs_restock?'on':''}"><div class="toggle-knob"></div></div>
-    </div>
+    </div>`}
+    ${isVip && item.cardno ? `<div class="detail-sec"><div class="detail-sec-label">卡号 / 账号</div><div class="detail-sec-body"><span class="detail-cardno">${esc(item.cardno)}</span></div></div>` : ''}
     ${item.notes ? `<div class="detail-sec"><div class="detail-sec-label">备注</div><div class="detail-sec-body">${esc(item.notes)}</div></div>` : ''}
-    ${item.link ? `<div class="detail-sec"><div class="detail-sec-label">购买链接</div><a class="detail-link" href="${esc(item.link)}" target="_blank">${esc(item.link)}</a></div>` : ''}
+    ${item.link ? `<div class="detail-sec"><div class="detail-sec-label">${isVip?'官网':'购买链接'}</div><a class="detail-link" href="${esc(item.link)}" target="_blank">${esc(item.link)}</a></div>` : ''}
     ${item.tags?.length ? `<div class="detail-sec"><div class="detail-sec-label">标签</div><div class="item-card-tags" style="margin-top:4px">${item.tags.map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div></div>` : ''}
     <div class="detail-sec"><div class="detail-sec-label">添加时间</div><div class="detail-sec-body">${new Date(item.created_at).toLocaleDateString('zh-CN')}</div></div>
     <div class="btn-row">
@@ -1851,15 +2071,17 @@ async function toggleRestock(id) {
   } catch {}
 }
 
-async function deleteItem(id) {
-  if (!confirm('确定删除这件好物？')) return;
-  try {
-    const { error } = await sb.from('homebase_items').delete().eq('id', id);
-    if (error) throw error;
-    items = items.filter(i => i.id !== id);
-    renderItems();
-    closeDetailModal();
-  } catch { alert('删除失败，请重试'); }
+function deleteItem(id) {
+  const item = items.find(i => i.id === id);
+  showConfirm(`删除「${item?.name || ''}」？`, async () => {
+    try {
+      const { error } = await sb.from('homebase_items').delete().eq('id', id);
+      if (error) throw error;
+      items = items.filter(i => i.id !== id);
+      renderItems();
+      closeDetailModal();
+    } catch { toast('删除失败，请检查网络'); }
+  });
 }
 
 function closeDetailModal() { document.getElementById('detail-modal').classList.remove('show'); }
@@ -1868,10 +2090,14 @@ function openAddModal() {
   editingId = null; selectedTags = [];
   document.getElementById('item-modal-title').textContent = '添加好物';
   document.getElementById('f-name').value = '';
-  document.getElementById('f-category').value = '洗护';
   document.getElementById('f-brand').value = '';
+  document.getElementById('f-cardno').value = '';
   document.getElementById('f-link').value = '';
   document.getElementById('f-notes').value = '';
+  rebuildCategorySelect();
+  const cats = customCats.filter(c => c !== '全部');
+  document.getElementById('f-category').value = cats.includes('洗护') ? '洗护' : (cats[0] || '');
+  onCatChange();
   renderTagPicker();
   document.getElementById('item-modal').classList.add('show');
   setTimeout(() => document.getElementById('f-name').focus(), 200);
@@ -1884,8 +2110,11 @@ function editItem(id) {
   editingId = id; selectedTags = [...(item.tags||[])];
   document.getElementById('item-modal-title').textContent = '编辑好物';
   document.getElementById('f-name').value = item.name;
+  rebuildCategorySelect();
   document.getElementById('f-category').value = item.category;
+  onCatChange();
   document.getElementById('f-brand').value = item.brand || '';
+  document.getElementById('f-cardno').value = item.cardno || '';
   document.getElementById('f-link').value = item.link || '';
   document.getElementById('f-notes').value = item.notes || '';
   renderTagPicker();
@@ -1925,6 +2154,7 @@ async function saveItem() {
     name,
     category: document.getElementById('f-category').value,
     brand: document.getElementById('f-brand').value.trim() || null,
+    cardno: document.getElementById('f-cardno').value.trim() || null,
     link: document.getElementById('f-link').value.trim() || null,
     notes: document.getElementById('f-notes').value.trim() || null,
     tags: selectedTags,
@@ -2067,9 +2297,11 @@ const clState = {
   outfits: [],
   outfit: { outer:null, top:null, bottom:null, shoes:null, accessory:null },
   filterCat: 'all',
+  filterOwner: 'all', // 'all' | 'me' | 'ta'
   pendingImg: null,
   pendingColor: '',
   selCat: null,
+  selOwner: 'me',   // default: 我的
   editSlot: null,
   pickerSel: null,
 };
@@ -2124,6 +2356,16 @@ function clSwitchPage(pg) {
   else sub.textContent = `${clState.outfits.length} 套穿搭`;
 }
 
+// Owner filter tabs
+document.getElementById('cl-owner-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.cl-owner-tab');
+  if (!btn) return;
+  document.querySelectorAll('.cl-owner-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  clState.filterOwner = btn.dataset.owner;
+  clRenderWardrobe();
+});
+
 // Category filter tabs
 document.getElementById('cl-cat-tabs').addEventListener('click', e => {
   const btn = e.target.closest('.cl-cat-tab');
@@ -2140,32 +2382,44 @@ function clRenderWardrobe() {
   const empty = document.getElementById('cl-wardrobe-empty');
   document.getElementById('cl-sub-title').textContent = `${clState.clothes.length} 件单品`;
 
-  const list = clState.filterCat === 'all'
-    ? clState.clothes
-    : clState.clothes.filter(c => c.category === clState.filterCat);
+  let list = clState.clothes;
+  if (clState.filterOwner !== 'all') {
+    const ownerVal = clState.filterOwner === 'me' ? currentIdentity : identityOther();
+    list = list.filter(c => (c.owner || currentIdentity) === ownerVal);
+  }
+  if (clState.filterCat !== 'all') {
+    list = list.filter(c => c.category === clState.filterCat);
+  }
 
   if (!list.length) {
     grid.innerHTML = ''; empty.style.display = 'flex'; return;
   }
   empty.style.display = 'none';
-  grid.innerHTML = list.map(c => `
+  grid.innerHTML = list.map(c => {
+    const isMe = !c.owner || c.owner === currentIdentity;
+    const ownerColor = isMe ? 'var(--dy-pink-dark)' : '#3b82f6';
+    const ownerLabel = isMe ? '我' : 'TA';
+    return `
     <div class="cl-cloth-card" data-id="${c.id}">
       <img src="${c.image}" alt="${esc(c.name)}" loading="lazy">
       <div class="cl-cloth-info">
-        <div class="cl-cloth-name">${esc(c.name)}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="cl-cloth-name">${esc(c.name)}</div>
+          <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${ownerColor}20;color:${ownerColor};font-weight:700;flex-shrink:0">${ownerLabel}</span>
+        </div>
         <div class="cl-cloth-meta">${CL_CAT_LABEL[c.category]||''}${c.color?' · '+esc(c.color):''}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   // Long-press to delete
   grid.querySelectorAll('.cl-cloth-card').forEach(card => {
     let t;
-    const startDel = () => { t = setTimeout(() => { if(confirm('删除这件衣服？')) clDeleteCloth(card.dataset.id); }, 650); };
+    const startDel = () => { t = setTimeout(() => { showConfirm('删除这件衣服？', () => clDeleteCloth(card.dataset.id)); }, 650); };
     card.addEventListener('touchstart', startDel);
     card.addEventListener('touchend',  () => clearTimeout(t));
     card.addEventListener('touchmove', () => clearTimeout(t));
-    card.addEventListener('contextmenu', e => { e.preventDefault(); if(confirm('删除这件衣服？')) clDeleteCloth(card.dataset.id); });
+    card.addEventListener('contextmenu', e => { e.preventDefault(); showConfirm('删除这件衣服？', () => clDeleteCloth(card.dataset.id)); });
   });
 }
 
@@ -2180,15 +2434,21 @@ async function clDeleteCloth(id) {
 
 // ─── Add Clothes ───
 function clOpenAddModal() {
-  clState.pendingImg = null; clState.pendingColor = ''; clState.selCat = null;
+  clState.pendingImg = null; clState.pendingColor = ''; clState.selCat = null; clState.selOwner = 'me';
   document.getElementById('cl-upload-prev').style.display = 'none';
   document.getElementById('cl-upload-ph').style.display = 'block';
   document.getElementById('cl-ai-badge').classList.remove('show');
   document.getElementById('cl-inp-name').value = '';
   document.getElementById('cl-file-inp').value = '';
   document.querySelectorAll('.cl-cat-sel-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.cl-who-btn').forEach(b => b.classList.toggle('on', b.dataset.who === 'me'));
   document.getElementById('cl-btn-save-cloth').disabled = true;
   document.getElementById('cl-add-modal').classList.add('show');
+}
+
+function clPickOwner(who) {
+  clState.selOwner = who;
+  document.querySelectorAll('.cl-who-btn').forEach(b => b.classList.toggle('on', b.dataset.who === who));
 }
 function clCloseAddModal() { document.getElementById('cl-add-modal').classList.remove('show'); }
 
@@ -2266,9 +2526,11 @@ async function clAiAnalyze(base64, key) {
 
 async function clSaveCloth() {
   const name = document.getElementById('cl-inp-name').value.trim() || '未命名';
+  const ownerVal = clState.selOwner === 'me' ? currentIdentity : identityOther();
   const item = {
     id: `c${Date.now()}`,
     name, category: clState.selCat,
+    owner: ownerVal,
     color: clState.pendingColor,
     image: clState.pendingImg,
     addedAt: Date.now()
@@ -2403,12 +2665,13 @@ function clRenderRecords() {
   }).join('');
 }
 
-async function clDeleteOutfit(id) {
-  if (!confirm('删除这套穿搭记录？')) return;
-  await clDbDel('cl_outfits', id);
-  clState.outfits = clState.outfits.filter(o => o.id !== id);
-  clRenderRecords();
-  toast('已删除');
+function clDeleteOutfit(id) {
+  showConfirm('删除这套穿搭记录？', async () => {
+    await clDbDel('cl_outfits', id);
+    clState.outfits = clState.outfits.filter(o => o.id !== id);
+    clRenderRecords();
+    toast('已删除');
+  });
 }
 
 // ════════════════════════════════════════
@@ -2526,16 +2789,17 @@ async function dySaveVoice() {
   } catch { toast('保存失败，请检查网络'); }
 }
 
-async function dyDeleteVoice(id) {
-  if (!confirm('删除这条心声？')) return;
-  try {
-    const { error } = await sb.from('hb_diary_voices').delete().eq('id', id);
-    if (error) throw error;
-    dyState.voices = dyState.voices.filter(v => v.id !== id);
-    dyRenderVoices();
-    document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
-    toast('已删除');
-  } catch { toast('删除失败'); }
+function dyDeleteVoice(id) {
+  showConfirm('删除这条心声？', async () => {
+    try {
+      const { error } = await sb.from('hb_diary_voices').delete().eq('id', id);
+      if (error) throw error;
+      dyState.voices = dyState.voices.filter(v => v.id !== id);
+      dyRenderVoices();
+      document.getElementById('dy-sub-title').textContent = `${dyState.voices.length} 条心声`;
+      toast('已删除');
+    } catch { toast('删除失败'); }
+  });
 }
 
 // ─── Fight ───
@@ -2625,16 +2889,17 @@ async function dySaveFight() {
   } catch { toast('保存失败，请检查网络'); }
 }
 
-async function dyDeleteFight(id) {
-  if (!confirm('删除这条记录？')) return;
-  try {
-    const { error } = await sb.from('hb_diary_fights').delete().eq('id', id);
-    if (error) throw error;
-    dyState.fights = dyState.fights.filter(f => f.id !== id);
-    dyRenderFights();
-    document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
-    toast('已删除');
-  } catch { toast('删除失败'); }
+function dyDeleteFight(id) {
+  showConfirm('删除这条记录？', async () => {
+    try {
+      const { error } = await sb.from('hb_diary_fights').delete().eq('id', id);
+      if (error) throw error;
+      dyState.fights = dyState.fights.filter(f => f.id !== id);
+      dyRenderFights();
+      document.getElementById('dy-sub-title').textContent = `${dyState.fights.length} 条记录`;
+      toast('已删除');
+    } catch { toast('删除失败'); }
+  });
 }
 
 // 分发 FAB 点击到当前子页
@@ -2849,15 +3114,16 @@ async function bdSaveEntry() {
   } catch { toast('保存失败，请检查网络'); }
 }
 
-async function bdDeleteEntry(id) {
-  if (!confirm('删除这条记录？')) return;
-  try {
-    const { error } = await sb.from('hb_budget_entries').delete().eq('id', id);
-    if (error) throw error;
-    bdState.entries = bdState.entries.filter(e => e.id !== id);
-    bdRenderLedger();
-    toast('已删除');
-  } catch { toast('删除失败'); }
+function bdDeleteEntry(id) {
+  showConfirm('删除这条账单记录？', async () => {
+    try {
+      const { error } = await sb.from('hb_budget_entries').delete().eq('id', id);
+      if (error) throw error;
+      bdState.entries = bdState.entries.filter(e => e.id !== id);
+      bdRenderLedger();
+      toast('已删除');
+    } catch { toast('删除失败'); }
+  });
 }
 
 // ════════════════════════════════════════
@@ -2978,18 +3244,19 @@ function hwContextMenu(e, id) {
   hwAskDelete(id);
 }
 
-async function hwAskDelete(id) {
+function hwAskDelete(id) {
   const task = hwState.tasks.find(t => t.id === id);
   if (!task) return;
-  if (!confirm(`删除「${task.name}」及所有记录？`)) return;
-  try {
-    await sb.from('hb_chore_logs').delete().eq('task_id', id);
-    await sb.from('hb_chore_tasks').delete().eq('id', id);
-    hwState.tasks = hwState.tasks.filter(t => t.id !== id);
-    hwState.logs  = hwState.logs.filter(l => l.task_id !== id);
-    hwRender();
-    toast('已删除');
-  } catch { toast('删除失败'); }
+  showConfirm(`删除「${task.name}」？`, '同时清除所有打卡记录', async () => {
+    try {
+      await sb.from('hb_chore_logs').delete().eq('task_id', id);
+      await sb.from('hb_chore_tasks').delete().eq('id', id);
+      hwState.tasks = hwState.tasks.filter(t => t.id !== id);
+      hwState.logs  = hwState.logs.filter(l => l.task_id !== id);
+      hwRender();
+      toast('已删除');
+    } catch { toast('删除失败'); }
+  });
 }
 
 function hwOpenAddModal() {
