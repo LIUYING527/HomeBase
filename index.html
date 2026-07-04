@@ -3363,7 +3363,7 @@ function hwLog(taskId) {
 }
 function hwCloseWhoModal() { document.getElementById('hw-who-modal').classList.remove('show'); }
 
-async function hwConfirmWho(relWho) {
+async function hwConfirmWho(storedWho) {
   document.getElementById('hw-who-modal').classList.remove('show');
   const taskId = hwState.pendingTaskId;
   hwState.pendingTaskId = null;
@@ -3372,16 +3372,13 @@ async function hwConfirmWho(relWho) {
 
   const btn = document.getElementById(`hwb-${taskId}`);
   if (btn) { btn.classList.add('popping'); btn.addEventListener('animationend', () => btn.classList.remove('popping'), { once: true }); }
-
-  // Convert relative label to stored identity value
-  const storedWho = relToStored(relWho);
   const entry = { task_id: taskId, task_name: task.name, task_emoji: task.emoji, who: storedWho, done_at: Date.now() };
   try {
     const { data, error } = await sb.from('hb_chore_logs').insert([entry]).select().single();
     if (error) throw error;
     hwState.logs.unshift(data);
     hwRender();
-    toast(`${task.emoji} ${task.name} · ${relWho} ✓`);
+    toast(`${task.emoji} ${task.name} · ${whoIco(storedWho)} ✓`);
   } catch { toast('记录失败，请检查网络'); }
 }
 
@@ -3447,7 +3444,7 @@ function hwRenderHistory() {
       <span class="hw-log-name">${esc(l.task_name)}</span>
       ${l.who ? whoTag(l.who) : ''}
       <span class="hw-log-time">${time}</span>
-      <button onclick="hwDeleteLog(${l.done_at})" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
+      <button onclick="hwDeleteLog('${l.done_at}')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
     </div>`;
   }).join('');
 }
@@ -3455,9 +3452,9 @@ function hwRenderHistory() {
 function hwDeleteLog(doneAt) {
   showConfirm('删除这条打卡记录？', async () => {
     try {
-      const { error } = await sb.from('hb_chore_logs').delete().eq('done_at', doneAt);
+      const { error } = await sb.from('hb_chore_logs').delete().eq('done_at', Number(doneAt));
       if (error) throw error;
-      hwState.logs = hwState.logs.filter(l => l.done_at !== doneAt);
+      hwState.logs = hwState.logs.filter(l => String(l.done_at) !== String(doneAt));
       hwRender();
       hwRenderHistory();
       toast('已删除');
