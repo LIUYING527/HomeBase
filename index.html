@@ -1488,8 +1488,8 @@
     <div class="field-group">
       <label class="field-label">谁的衣服</label>
       <div class="cl-who-row" id="cl-who-row">
-        <button class="cl-who-btn on" data-who="me" onclick="clPickOwner('me')">👩 我的</button>
-        <button class="cl-who-btn" data-who="ta" onclick="clPickOwner('ta')">👨 TA的</button>
+        <button class="cl-who-btn on" data-who="me" onclick="clPickOwner('me')">👩</button>
+        <button class="cl-who-btn" data-who="ta" onclick="clPickOwner('ta')">👨</button>
       </div>
     </div>
     <div class="field-group">
@@ -1545,8 +1545,8 @@
     <div class="field-group">
       <label class="field-label">谁花的</label>
       <div class="bd-who-row">
-        <button class="bd-who-btn on" data-bwho="我" onclick="bdPickWho('我')">👤 我</button>
-        <button class="bd-who-btn" data-bwho="TA" onclick="bdPickWho('TA')">👤 TA</button>
+        <button class="bd-who-btn on" data-bwho="我" onclick="bdPickWho('我')">👩</button>
+        <button class="bd-who-btn" data-bwho="TA" onclick="bdPickWho('TA')">👨</button>
       </div>
     </div>
     <div class="field-group">
@@ -1566,10 +1566,10 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="hw-who-title">谁做的？</div>
     <div style="display:flex;gap:12px">
-      <button class="btn-primary" style="flex:1;padding:18px;font-size:17px;background:#db2777"
-              onclick="hwConfirmWho('我')">👤 我做的</button>
-      <button class="btn-primary" style="flex:1;padding:18px;font-size:17px;background:#3b82f6"
-              onclick="hwConfirmWho('TA')">👤 TA做的</button>
+      <button class="btn-primary" style="flex:1;padding:18px;font-size:28px;background:#db2777"
+              onclick="hwConfirmWho('我')">👩</button>
+      <button class="btn-primary" style="flex:1;padding:18px;font-size:28px;background:#3b82f6"
+              onclick="hwConfirmWho('TA')">👨</button>
     </div>
   </div>
 </div>
@@ -1612,8 +1612,8 @@
       <label class="field-label">谁说的</label>
       <div class="dy-who-row">
         <button class="dy-who-btn on" data-vwho="我" onclick="dyPickVoiceWho('我')"
-                style="border-color:var(--dy-pink);background:var(--dy-pink-light);color:var(--dy-pink-dark)">👤 我</button>
-        <button class="dy-who-btn" data-vwho="TA" onclick="dyPickVoiceWho('TA')">👤 TA</button>
+                style="border-color:var(--dy-pink);background:var(--dy-pink-light);color:var(--dy-pink-dark)">👩</button>
+        <button class="dy-who-btn" data-vwho="TA" onclick="dyPickVoiceWho('TA')">👨</button>
       </div>
     </div>
     <div class="field-group">
@@ -1652,9 +1652,9 @@
     <div class="field-group">
       <label class="field-label">谁先开始的</label>
       <div class="dy-who-row">
-        <button class="dy-who-btn" data-who="我先的" onclick="dyPickWho('我先的')">我先的</button>
-        <button class="dy-who-btn on" data-who="互相的" onclick="dyPickWho('互相的')">互相的</button>
-        <button class="dy-who-btn" data-who="TA先的" onclick="dyPickWho('TA先的')">TA先的</button>
+        <button class="dy-who-btn" data-who="我先的" onclick="dyPickWho('我先的')" style="color:#db2777">👩先</button>
+        <button class="dy-who-btn on" data-who="互相的" onclick="dyPickWho('互相的')">互相</button>
+        <button class="dy-who-btn" data-who="TA先的" onclick="dyPickWho('TA先的')" style="color:#3b82f6">👨先</button>
       </div>
     </div>
     <div class="field-group">
@@ -1875,14 +1875,14 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ─── 性别颜色辅助（固定：'我'=粉=👩，'TA'=蓝=👨，与当前身份无关）───
+// ─── 性别颜色辅助（固定：'我'=粉，'TA'=蓝，与当前身份无关）───
 function whoClr(stored) { return stored === '我' ? '#db2777' : '#3b82f6'; }
 function whoBg(stored)  { return stored === '我' ? '#fce7f3' : '#eff6ff'; }
 function whoIco(stored) { return stored === '我' ? '👩' : '👨'; }
-function whoTag(stored, showIcon) {
+// 纯色圆点，不显示任何文字
+function whoTag(stored) {
   if (!stored) return '';
-  const c = whoClr(stored), b = whoBg(stored), ico = showIcon !== false ? whoIco(stored)+' ' : '';
-  return `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${b};color:${c};font-weight:700">${ico}</span>`;
+  return `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${whoClr(stored)};flex-shrink:0;margin:0 1px"></span>`;
 }
 
 // ─── 自定义确认弹窗 ───
@@ -2491,9 +2491,9 @@ function clRenderWardrobe() {
     <div class="cl-cloth-card" data-id="${c.id}">
       <img src="${c.image}" alt="${esc(c.name)}" loading="lazy">
       <div class="cl-cloth-info">
-        <div style="display:flex;align-items:center;gap:5px">
+        <div style="display:flex;align-items:center;gap:6px">
           <div class="cl-cloth-name">${esc(c.name)}</div>
-          <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${ob};color:${oc};font-weight:700;flex-shrink:0">${oico}</span>
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${oc};flex-shrink:0"></span>
         </div>
         <div class="cl-cloth-meta">${CL_CAT_LABEL[c.category]||''}${c.color?' · '+esc(c.color):''}</div>
       </div>
@@ -2898,10 +2898,10 @@ function dyRenderFights() {
     let whoDisplay = f.who, badgeStyle = '';
     if (f.who && f.who.startsWith('我')) {
       badgeStyle = `background:${whoBg('我')};color:${whoClr('我')}`;
-      whoDisplay = `${whoIco('我')} 先`;
+      whoDisplay = `● 先动手`;
     } else if (f.who && f.who.startsWith('TA')) {
       badgeStyle = `background:${whoBg('TA')};color:${whoClr('TA')}`;
-      whoDisplay = `${whoIco('TA')} 先`;
+      whoDisplay = `● 先动手`;
     } else {
       badgeStyle = 'background:#f3e8ff;color:#7c3aed';
       whoDisplay = '互相的';
@@ -3458,17 +3458,17 @@ function hwRenderHistory() {
       <span class="hw-log-name">${esc(l.task_name)}</span>
       ${l.who ? whoTag(l.who) : ''}
       <span class="hw-log-time">${time}</span>
-      <button onclick="hwDeleteLog('${l.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
+      <button onclick="hwDeleteLog(${l.done_at})" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0 2px;flex-shrink:0" title="删除">🗑</button>
     </div>`;
   }).join('');
 }
 
-function hwDeleteLog(id) {
+function hwDeleteLog(doneAt) {
   showConfirm('删除这条打卡记录？', async () => {
     try {
-      const { error } = await sb.from('hb_chore_logs').delete().eq('id', id);
+      const { error } = await sb.from('hb_chore_logs').delete().eq('done_at', doneAt);
       if (error) throw error;
-      hwState.logs = hwState.logs.filter(l => l.id !== id);
+      hwState.logs = hwState.logs.filter(l => l.done_at !== doneAt);
       hwRender();
       hwRenderHistory();
       toast('已删除');
